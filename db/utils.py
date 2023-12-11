@@ -194,5 +194,3 @@ def insert_data_from_xlsx(conn, cur, xlsx_path="../data/data.xlsx"):
     df = pd.read_excel(xlsx_path, sheet_name=None)
     
     
-
-

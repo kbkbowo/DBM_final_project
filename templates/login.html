@@ -1,0 +1,14 @@
+<!-- templates/registration/login.html -->
+<h2>Log In</h2>
+<form method="post">
+    {% csrf_token %}
+    <!-- username -->
+    <label for="id_username">Username:</label> {{ form.username }}
+    <!-- password -->
+    <br><br>
+    <label for="id_password">Password:</label> {{ form.password }}
+    <!-- submit -->
+    <button type="submit">Log In</button>
+</form>
+<!-- add status normally blank and says "login failed" upon failed logins -->
+{{ status }}
