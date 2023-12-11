@@ -23,11 +23,11 @@ def get_sql(task):
 def create_tables(conn, cur):
     sql_commands = [
     """
-    CREATE TABLE USERS ( 
+    CREATE TABLE USER_ ( 
         User_ID VARCHAR(20) PRIMARY KEY,
         User_name VARCHAR(20) NOT NULL,
-        User_phone_number CHAR(10) NOT NULL,
-        User_email VARCHAR(20) NOT NULL,
+        User_phone_number CHAR(16) NOT NULL,
+        User_email VARCHAR(40) NOT NULL,
         User_level VARCHAR(10) NOT NULL CHECK (User_level IN ('User', 'Admin'))
     );""",
 
@@ -35,10 +35,10 @@ def create_tables(conn, cur):
     CREATE TABLE EVENT (
         Event_ID VARCHAR(20) PRIMARY KEY,
         Event_date DATE,
-        Event_name VARCHAR(20) NOT NULL,
-        Event_description VARCHAR(30),
-        Event_location VARCHAR(30),
+        Event_name VARCHAR(50) NOT NULL,
         Capacity INT,
+        Event_location VARCHAR(100),
+        Event_description VARCHAR(200),
         Start_time TIME NOT NULL,
         End_time TIME NOT NULL
     );""",
@@ -46,9 +46,9 @@ def create_tables(conn, cur):
     """
     CREATE TABLE ORGANIZATION (
         Org_ID VARCHAR(20) PRIMARY KEY,
-        Org_name VARCHAR(20) NOT NULL,
-        Org_address VARCHAR(30) NOT NULL,
-        Org_phone_number CHAR(10) NOT NULL,
+        Org_name VARCHAR(50) NOT NULL,
+        Org_address VARCHAR(100) NOT NULL,
+        Org_phone_number CHAR(16) NOT NULL,
         Org_founded_date DATE NOT NULL
     );""",
 
@@ -57,7 +57,7 @@ def create_tables(conn, cur):
         User_ID VARCHAR(20),
         Event_ID VARCHAR(20),
         PRIMARY KEY (User_ID, Event_ID),
-        FOREIGN KEY (User_ID) REFERENCES USERS(User_ID) ON DELETE CASCADE ON UPDATE CASCADE,
+        FOREIGN KEY (User_ID) REFERENCES USER_(User_ID) ON DELETE CASCADE ON UPDATE CASCADE,
         FOREIGN KEY (Event_ID) REFERENCES EVENT(Event_ID) ON DELETE CASCADE ON UPDATE CASCADE
     );""",
 
@@ -71,13 +71,13 @@ def create_tables(conn, cur):
     );""",
 
     """
-    CREATE TABLE JOINS (
+    CREATE TABLE JOIN_ (
         User_ID VARCHAR(20),
         Org_ID VARCHAR(20),
-        Join_date DATE NOT NULL,
+        Join_date DATE,
         Quit_date DATE,
-        PRIMARY KEY (User_ID, Org_ID),
-        FOREIGN KEY (User_ID) REFERENCES USERS(User_ID) ON DELETE CASCADE ON UPDATE CASCADE,
+        PRIMARY KEY (User_ID, Org_ID, Join_date),
+        FOREIGN KEY (User_ID) REFERENCES USER_(User_ID) ON DELETE CASCADE ON UPDATE CASCADE,
         FOREIGN KEY (Org_ID) REFERENCES ORGANIZATION(Org_ID) ON DELETE CASCADE ON UPDATE CASCADE
     );""",
 
@@ -85,20 +85,20 @@ def create_tables(conn, cur):
     CREATE TABLE BUILD (
         Org_ID VARCHAR(20),
         Founder_ID VARCHAR(20),
-        PRIMARY KEY (Org_ID),
+        PRIMARY KEY (Org_ID, Founder_ID),
         FOREIGN KEY (Org_ID) REFERENCES ORGANIZATION(Org_ID) ON DELETE CASCADE ON UPDATE CASCADE,
-        FOREIGN KEY (Founder_ID) REFERENCES USERS(User_ID) ON DELETE CASCADE ON UPDATE CASCADE
+        FOREIGN KEY (Founder_ID) REFERENCES USER_(User_ID) ON DELETE CASCADE ON UPDATE CASCADE
     );""",
 
     """
     CREATE TABLE DONATE (
         User_ID VARCHAR(20),
         Org_ID VARCHAR(20),
-        Donate_time TIME NOT NULL,
+        Donate_date DATE NOT NULL,
         D_item_name VARCHAR(20) NOT NULL,
         Donate_amount INT NOT NULL,
-        PRIMARY KEY (User_ID, Org_ID, Donate_time),
-        FOREIGN KEY (User_ID) REFERENCES USERS(User_ID) ON DELETE CASCADE ON UPDATE CASCADE,
+        PRIMARY KEY (User_ID, Org_ID, Donate_date),
+        FOREIGN KEY (User_ID) REFERENCES USER_(User_ID) ON DELETE CASCADE ON UPDATE CASCADE,
         FOREIGN KEY (Org_ID) REFERENCES ORGANIZATION(Org_ID) ON DELETE CASCADE ON UPDATE CASCADE
     );""",
 
@@ -108,9 +108,9 @@ def create_tables(conn, cur):
         Org_ID_in VARCHAR(20),
         Supplement_name VARCHAR(20) NOT NULL,
         Supplement_quantity INT NOT NULL,
-        Lend_date DATE NOT NULL,
+        Lend_date DATE,
         Expected_return_date DATE NOT NULL,
-        PRIMARY KEY (Org_ID_out, Org_ID_in),
+        PRIMARY KEY (Org_ID_out, Org_ID_in, Lend_date),
         FOREIGN KEY (Org_ID_out) REFERENCES ORGANIZATION(Org_ID) ON DELETE CASCADE ON UPDATE CASCADE,
         FOREIGN KEY (Org_ID_in) REFERENCES ORGANIZATION(Org_ID) ON DELETE CASCADE ON UPDATE CASCADE
     );""",
@@ -120,25 +120,25 @@ def create_tables(conn, cur):
         Animal_ID VARCHAR(20) PRIMARY KEY,
         Animal_type VARCHAR(20) NOT NULL,
         Animal_name VARCHAR(20) NOT NULL,
-        Animal_status VARCHAR(10) NOT NULL CHECK (Animal_status IN ('adopted', 'sheltered', 'released')),
-        Reported_time DATE NOT NULL,
+        Animal_status VARCHAR(10) NOT NULL CHECK (Animal_status IN ('Adopted', 'Sheltered', 'Released')),
+        Reported_date DATE NOT NULL,
         Reported_reason VARCHAR(200) NOT NULL,
         Reported_location VARCHAR(100) NOT NULL,
-        Shelter_date DATE NOT NULL,
+        Shelter_date DATE,
         Adopt_User_ID VARCHAR(20),
         Report_User_ID VARCHAR(20),
         Org_ID VARCHAR(20) NOT NULL,
-        FOREIGN KEY (Adopt_User_ID) REFERENCES USERS(User_ID) ON DELETE CASCADE ON UPDATE CASCADE,
-        FOREIGN KEY (Report_User_ID) REFERENCES USERS(User_ID) ON DELETE CASCADE ON UPDATE CASCADE,
+        FOREIGN KEY (Adopt_User_ID) REFERENCES USER_(User_ID) ON DELETE CASCADE ON UPDATE CASCADE,
+        FOREIGN KEY (Report_User_ID) REFERENCES USER_(User_ID) ON DELETE CASCADE ON UPDATE CASCADE,
         FOREIGN KEY (Org_ID) REFERENCES ORGANIZATION(Org_ID) ON DELETE CASCADE ON UPDATE CASCADE
     );""",
 
     """
     CREATE TABLE HOSPITAL (
         Hospital_ID VARCHAR(10) PRIMARY KEY,
-        Hospital_Name VARCHAR(10) NOT NULL,
-        Hospital_Address VARCHAR(20) NOT NULL,
-        Hospital_phone_number VARCHAR(10) NOT NULL
+        Hospital_Name VARCHAR(100) NOT NULL,
+        Hospital_Address VARCHAR(100) NOT NULL,
+        Hospital_phone_number VARCHAR(16) NOT NULL
     );""",
 
     """
@@ -146,10 +146,10 @@ def create_tables(conn, cur):
         Animal_ID VARCHAR(10),
         Hospital_ID VARCHAR(10),
         Org_ID VARCHAR(20),
-        Sent_date DATE NOT NULL,
-        Return_date DATE NOT NULL,
-        Sent_reason VARCHAR(20) NOT NULL,
-        PRIMARY KEY (Animal_ID, Hospital_ID),
+        Sent_date DATE,
+        Return_date DATE,
+        Sent_reason VARCHAR(200) NOT NULL,
+        PRIMARY KEY (Animal_ID, Hospital_ID, Sent_date),
         FOREIGN KEY (Animal_ID) REFERENCES ANIMAL(Animal_ID) ON DELETE CASCADE ON UPDATE CASCADE,
         FOREIGN KEY (Hospital_ID) REFERENCES HOSPITAL(Hospital_ID) ON DELETE CASCADE ON UPDATE CASCADE,
         FOREIGN KEY (Org_ID) REFERENCES ORGANIZATION(Org_ID) ON DELETE CASCADE ON UPDATE CASCADE
@@ -176,5 +176,23 @@ def create_tables(conn, cur):
     tables = pd.DataFrame(cur.fetchall(), columns=['table_name'])
     print("\ntables\n", tables)
 
+def insert_data_from_xlsx(conn, cur, xlsx_path="../data/data.xlsx"):
+    table_names_map = {
+        "users": "USER_",
+        "events": "EVENT",
+        "orgs": "ORGANIZATION",
+        "hospitals": "HOSPITAL",
+        "animals": "ANIMAL",
+        "attends": "ATTEND",
+        "holds": "HOLD",
+        "joins": "JOIN_",
+        "builds": "BUILD",
+        "donates": "DONATE",
+        "lend_supplements": "LEND_SUPPLEMENT",
+        "sent_tos": "SENT_TO"
+    }
+    df = pd.read_excel(xlsx_path, sheet_name=None)
+    
+    
 
 

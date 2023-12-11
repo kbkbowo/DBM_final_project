@@ -51,7 +51,7 @@ def generate_event(records=200):
             'Event_name': event_names[i%len(event_names)],
             'Event_location': fake.address(),
             'Capacity': random.randint(0, 1000),
-            'Event_description': fake.text(max_nb_chars=200),
+            'Event_description': fake.text(max_nb_chars=200).replace('\n', ' '),
             'Event_start_time': fake.time(pattern="%H:%M:%S", end_datetime=None),
             'Event_end_time': fake.time(pattern="%H:%M:%S", end_datetime=None),
         })
@@ -67,18 +67,19 @@ def generate_animal(users, orgs, records=100):
         animal_types = json.load(f)
     
     for i in range(records):
+        sheltered = random.randint(0, 9) < 9
         animals.append({
             'Animal_ID': f'{i:20d}',
             'Animal_type': random.choice(animal_types),
             'Animal_name': fake.name(),
             'Animal_status': random.choice(['Adopted', 'Sheltered', 'Released']),
             'Reported_date': fake.date(pattern="%Y-%m-%d", end_datetime=None),
-            'Reported_reason': fake.text(max_nb_chars=200),
+            'Reported_reason': fake.text(max_nb_chars=200).replace('\n', ' '),
             'Reported_location': fake.address(),
-            'Shelter_date': fake.date(pattern="%Y-%m-%d", end_datetime=None) if random.randint(0, 9) < 9 else None,
-            'Adopt_user_ID': random.choice(available_user_ids) if random.randint(0, 9) < 9 else None,
+            'Shelter_date': fake.date(pattern="%Y-%m-%d", end_datetime=None) if sheltered else None,
+            'Adopt_user_ID': random.choice(available_user_ids) if sheltered and (random.randint(0, 9) < 8) else None,
             'Report_user_ID': random.choice(available_user_ids),
-            'Org_ID': random.choice(available_org_ids),
+            'Org_ID': random.choice(available_org_ids) if sheltered else None,
         })
     print("successfully generated animals")
     return animals
@@ -163,6 +164,8 @@ def generate_join(users, orgs, records=2000):
             joins.append({
                 'User_ID': user_id,
                 'Org_ID': org_id,
+                'Join_date': fake.date(pattern="%Y-%m-%d", end_datetime=None),
+                'Quit_date': fake.date(pattern="%Y-%m-%d", end_datetime=None) if random.randint(0, 9) < 9 else None,
             })
     print("successfully generated joins")
     return joins
@@ -199,6 +202,9 @@ def generate_donate(users, orgs, records=1000):
             donates.append({
                 'User_ID': user_id,
                 'Org_ID': org_id,
+                'Donate_date': fake.date(pattern="%Y-%m-%d", end_datetime=None),
+                'D_item_name': random.choice(['food', 'medicine']),
+                'Donate_amount': random.randint(0, 100000),
             })
     print("successfully generated donates")
     return donates
@@ -235,7 +241,7 @@ def generate_sent_to(animals, hospitals, records=200):
                 'OrgID': random.choice([animal['Org_ID'] for animal in animals if animal['Animal_ID'] == animal_id]),
                 'Sent_date': fake.date(pattern="%Y-%m-%d", end_datetime=None),
                 'Return_date': fake.date(pattern="%Y-%m-%d", end_datetime=None) if random.randint(0, 9) < 9 else None,
-                'Sent_reason': fake.text(max_nb_chars=200),
+                'Sent_reason': fake.text(max_nb_chars=200).replace('\n', ' '),
             })
     print("successfully generated sent_tos")
     return sent_tos
