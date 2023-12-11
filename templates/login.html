@@ -9,6 +9,10 @@
     <label for="id_password">Password:</label> {{ form.password }}
     <!-- submit -->
     <button type="submit">Log In</button>
+
+    <!-- redirect to signup page -->
+    <p>Don't have an account? <a href="{% url 'signup' %}">Sign up</a> now.</p>
+
 </form>
 <!-- add status normally blank and says "login failed" upon failed logins -->
 {{ status }}

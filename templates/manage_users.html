@@ -1,0 +1,65 @@
+<!-- searches for users -->
+
+<html>
+
+<head>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'offcanvas.css' %}" />
+    <title>Manage Users</title>
+</head>
+
+<body>
+    <h1>Manage Users</h1>
+    <section class="container">
+        <div class="left-half">
+            <article>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <label for="user_id">User ID:</label>
+                    <input type="text" id="user_id" name="user_id"><br><br>
+                    <label for="user_name">User Name:</label>
+                    <input type="text" id="user_name" name="user_name"><br><br>
+                    <label for="user_email">User Email:</label>
+                    <input type="text" id="user_email" name="user_email"><br><br>
+                    <label for="user_phone">User Phone:</label>
+                    <input type="text" id="user_phone" name="user_phone"><br><br>
+                    <input type="submit" value="Search">
+                </form>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" formaction="../admin_home/">Back</button>
+                </form>
+                <!-- list the search results -->
+                {% if users %}
+                <h2>Search Results</h2>
+                <table>
+                    <tr>
+                        <th>User ID</th>
+                        <th>User Name</th>
+                        <th>User Email</th>
+                        <th>User Phone</th>
+                        <th>User_Level</th>
+                    </tr>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.user_id }}</td>
+                        <td>{{ user.user_name }}</td>
+                        <td>{{ user.user_email }}</td>
+                        <td>{{ user.user_phone }}</td>
+                        <td>{{ user.user_level }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                {% endif %}
+            </article>
+        </div>
+        <div class="right-half">
+            <article>
+
+            </article>
+
+        </div>
+    </section>
+
+</body>

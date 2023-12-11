@@ -1,0 +1,19 @@
+<html>
+
+<head>
+    <title>Profile</title>
+</head>
+
+<body>
+    <label for="user_id">User ID:</label> {{ user_id }}<br><br>
+    <label for="user_name">Username:</label> {{ user_name }}<br><br>
+    <label for="user_phone">Phone:</label> {{ user_phone }}<br><br>
+    <label for="email">Email:</label> {{ user_email }}<br><br>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" formaction="../">Home</button>
+    </form>
+</body>
+
+</html>

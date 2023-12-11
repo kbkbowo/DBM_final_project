@@ -27,7 +27,7 @@ def create_tables(conn, cur):
         User_ID VARCHAR(20) PRIMARY KEY,
         User_name VARCHAR(20) NOT NULL,
         User_phone_number CHAR(16) NOT NULL,
-        User_email VARCHAR(40) NOT NULL,
+        User_email VARCHAR(40) UNIQUE NOT NULL,
         User_level VARCHAR(10) NOT NULL CHECK (User_level IN ('User', 'Admin'))
     );""",
 
