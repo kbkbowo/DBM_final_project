@@ -1,0 +1,46 @@
+import pandas as pd
+from utils import *
+
+users = generate_user(records=5000)
+events = generate_event(records=1000)
+orgs = generate_org(records=30)
+hospitals = generate_hospital(records=267)
+animals = generate_animal(users, orgs, records=3000)
+attends = generate_attend(users, events, records=100000)
+holds = generate_hold(events, orgs, records=1500)
+joins = generate_join(users, orgs, records=2000)
+builds = generate_build(orgs, users, records=75)
+donates = generate_donate(users, orgs, records=1000)
+lend_supplements = generate_lend_supplement(orgs, records=1000)
+sent_tos = generate_sent_to(animals, hospitals, records=3200)
+
+users = pd.DataFrame(users)
+events = pd.DataFrame(events)
+orgs = pd.DataFrame(orgs)
+hospitals = pd.DataFrame(hospitals)
+animals = pd.DataFrame(animals)
+attends = pd.DataFrame(attends)
+holds = pd.DataFrame(holds)
+joins = pd.DataFrame(joins)
+builds = pd.DataFrame(builds)
+donates = pd.DataFrame(donates)
+lend_supplements = pd.DataFrame(lend_supplements)
+sent_tos = pd.DataFrame(sent_tos)
+
+# Write to xlsx with multitab
+outfile = 'data.xlsx'
+writer = pd.ExcelWriter(outfile, engine='xlsxwriter') 
+users.to_excel(writer, sheet_name='users', index=False)
+events.to_excel(writer, sheet_name='events', index=False)
+orgs.to_excel(writer, sheet_name='orgs', index=False)
+hospitals.to_excel(writer, sheet_name='hospitals', index=False)
+animals.to_excel(writer, sheet_name='animals', index=False)
+attends.to_excel(writer, sheet_name='attends', index=False)
+holds.to_excel(writer, sheet_name='holds', index=False)
+joins.to_excel(writer, sheet_name='joins', index=False)
+builds.to_excel(writer, sheet_name='builds', index=False)
+donates.to_excel(writer, sheet_name='donates', index=False)
+lend_supplements.to_excel(writer, sheet_name='lend_supplements', index=False)
+sent_tos.to_excel(writer, sheet_name='sent_tos', index=False)
+writer.save()
+
