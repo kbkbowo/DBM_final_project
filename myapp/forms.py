@@ -74,16 +74,16 @@ class SignupForm(forms.Form):
         return False
 
 class QueryUsersForm(forms.Form):
+    user_id = forms.CharField(required=False)
     user_name = forms.CharField(required=False)
     phone = forms.CharField(required=False)
     email = forms.CharField(required=False)
-    level = forms.CharField(required=False)
+    # options {Any, User, Admin}
+    level = forms.ChoiceField(choices=[('', 'Any'), ('User', 'User'), ('Admin', 'Admin')], required=False)
 
-    def is_valid(self):
-        valid = super(QueryUsersForm, self).is_valid()
-        if not valid:
-            return False
+    def execute_action(self):
         conn, cur = get_db()
+        user_id = self.cleaned_data['user_id']
         user_name = self.cleaned_data['user_name']
         phone = self.cleaned_data['phone']
         email = self.cleaned_data['email']
@@ -91,11 +91,56 @@ class QueryUsersForm(forms.Form):
         sql = f"""
         SELECT *
         FROM USER_ AS u
-        WHERE u.User_name LIKE '%{user_name}%' AND u.User_phone_number LIKE '%{phone}%' AND u.User_email LIKE '%{email}%' AND u.User_level LIKE '%{level}%';
+        WHERE u.User_id LIKE '%{user_id}%' 
+            AND u.User_name LIKE '%{user_name}%' 
+            AND u.User_phone_number LIKE '%{phone}%' 
+            AND u.User_email LIKE '%{email}%' 
+            AND u.User_level LIKE '%{level}%';
         """
         # check if exists
         cur.execute(sql)
         result = cur.fetchall()
         self.user_data = result
         return True
+        
+
+class ManageUserForm(forms.Form):
+    action_choices = forms.ChoiceField(choices=[('promote', 'Promote (Make Admin)'), ('demote', 'Demote (Make User)'), ('delete', 'Delete Account')], required=False)
+
+    def execute_action(self, user_id):
+        conn, cur = get_db()
+        action = self.cleaned_data['action_choices']
+        print(action)
+
+        try:
+            if action == 'promote':
+                sql = f"""
+                UPDATE USER_
+                SET User_level = 'Admin'
+                WHERE User_ID = '{user_id}';
+                """
+                cur.execute(sql)
+                conn.commit()
+                return True
+            elif action == 'demote':
+                sql = f"""
+                UPDATE USER_
+                SET User_level = 'User'
+                WHERE User_ID = '{user_id}';
+                """
+                cur.execute(sql)
+                conn.commit()
+                return True
+            elif action == 'delete':
+                sql = f"""
+                DELETE FROM USER_
+                WHERE User_ID = '{user_id}';
+                """
+                cur.execute(sql)
+                conn.commit()
+                return True
+        except Exception as e:
+            print(e)
+            conn.rollback()
+            return False
         

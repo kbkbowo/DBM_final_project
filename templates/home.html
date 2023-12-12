@@ -7,7 +7,7 @@
 </head>
 
 <body>
-    <p>Welcome, User {{ user_name }}! Your user ID is {{ user_id }}</p>
+    <p>Welcome, {{ user_level }} {{ user_name }}! Your user ID is {{ user_id }}</p>
     <!-- <p><a href="logout/">Logout</a></p> -->
     <!-- make a button instead -->
     <form method="post">
@@ -18,6 +18,12 @@
         {% csrf_token %}
         <button type="submit" formaction="profile/">Profile</button>
     </form>
+    {% if user_level == "Admin" %}
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="redirect_manage_users">Manage Users</button>
+    </form>
+    {% endif %}
 </body>
 
 </html>
