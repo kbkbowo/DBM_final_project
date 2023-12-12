@@ -21,3 +21,4 @@ python manage.py runserver
 ```
 
 You should see an url saying that the website is hosted at localhost:xxxx, click to open the website. 
+
