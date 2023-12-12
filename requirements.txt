@@ -1,3 +1,4 @@
 pandas
 django
 psycopg2
+yaml
