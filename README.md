@@ -13,6 +13,7 @@ pip install -r requirements.txt
 run the following command to activate the webpage server
 
 ```bash
+python manage.py migrate
 python manage.py runserver
 ```
 
