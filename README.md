@@ -2,6 +2,9 @@
 
 Repository of DBM final project of Group 6
 
+Online deployment server at http://165.22.52.60:8000/
+It attempts to pull and deploy this repo every 10 secs. 
+
 ## Installing the requirements
 
 ```bash
