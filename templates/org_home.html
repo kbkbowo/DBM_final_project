@@ -23,6 +23,8 @@
                 <th>Address</th>
                 <th>Phone_Num</th>
                 <th>Founded_Date</th>
+                <th>Homepage</th>
+                <th>Edit info</th>
             </tr>
             {% for org in owned_orgs %}
             <tr>
@@ -31,8 +33,12 @@
                 <td>{{ org.org_address }}</td>
                 <td>{{ org.org_phone }}</td>
                 <td>{{ org.org_founded_date }}</td>
+                <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}">Homepage</button></form></td>
+                <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}/edit_info">Edit</button></form></td>
+                <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}/edit_founder">Edit Founder</button></form></td>
             </tr>
             {% endfor %}
+        </table>
         <!-- Build org -->
         
     </body>

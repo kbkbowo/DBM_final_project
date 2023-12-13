@@ -1,14 +1,14 @@
 from django.shortcuts import render, HttpResponse, redirect
-from .forms import LoginForm, SignupForm, QueryUsersForm, ManageUserForm, BuildOrgForm
-from .db_utils import get_owned_orgs
+from .forms import LoginForm, SignupForm, QueryUsersForm, ManageUserForm, BuildOrgForm, ManageFounderForm
+from .db_utils import get_owned_orgs, validate_org_owner, get_org_info, get_org_founders 
 
 class User:
-    def __init__(self, user_id, user_name, user_phone, user_email, user_level):
+    def __init__(self, user_id, user_name, user_email, user_phone, user_level):
         self.dict = {
             "user_id": user_id,
             "user_name": user_name,
-            "user_phone": user_phone,
             "user_email": user_email,
+            "user_phone": user_phone,
             "user_level": user_level,
         }
         ### set attributes
@@ -201,5 +201,91 @@ def org_build(request):
         
     return render(request, 'org_build.html', {'form': BuildOrgForm()})
 
+def org_page(request, org_id=-1):
+    if org_id == -1:
+        return redirect('org_home')
+    
+    org_info = Org(*get_org_info(org_id)).dict
+    org_founders = parse_data(User, get_org_founders(org_id))
+
+    ctx_dict = {
+        "org_info": org_info,
+        "org_founders": org_founders,
+    }
+
+    return render(request, 'org_page.html', ctx_dict)
+
+def org_edit_info(request, org_id=-1):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'org_edit'
+        return redirect('login')
+    # validate user's ownership of the org
+    ownership = validate_org_owner({'user_id': request.session['user_data'][0], 'org_id': org_id})
+    if not ownership:
+        return redirect('org_home')
+    
+    org_info = Org(*get_org_info(org_id)).dict
+    if request.method == 'POST':
+        form = BuildOrgForm(request.POST)
+        if form.is_valid():
+            user_id = request.session['user_data'][0]
+            form.update_org_data(org_id=org_id)
+            return redirect('org_home')
+        else:
+            return render(request, 'org_edit_info.html', {'form': form, 'status': 'Invalid inputs.'})
+        
+    form = BuildOrgForm(initial=org_info)
+    form.cleaned_data = org_info
+    return render(request, 'org_edit_info.html', {'form': form})
+
+def org_edit_founder(request, org_id=-1):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'org_add_founder'
+        return redirect('login')
+    # validate user's ownership of the org
+    if request.session.get('ownership') is None:
+        request.session['ownership'] = []
+    
+    if org_id not in request.session['ownership']:
+        ownership = validate_org_owner({'user_id': request.session['user_data'][0], 'org_id': org_id})
+        if not ownership:
+            return redirect('org_home')
+        else: 
+            request.session['ownership'].append(org_id)
+            request.session.modified = True
+    
+    print("founders:", get_org_founders(org_id))
+    selected_self = False
+    
+    if request.method == 'POST':
+        form = ManageFounderForm(request.POST)
+        if form.is_valid():
+            if "Search" in request.POST:
+                form.query_search()
+                if form.selected_user[0] == request.session['user_data'][0]:
+                    selected_self = True
+            elif "Confirm_action" in request.POST:
+                form.query_search()
+                if form.selected_user[0] != request.session['user_data'][0]:
+                    form.execute_action(org_id=org_id)
+                else:
+                    selected_self = True
+                
+            users = parse_data(User, form.user_data)
+            ctx_dict = {
+                "form": form,
+                "users": users,
+                "len_users": len(users),
+                "org_founders": parse_data(User, get_org_founders(org_id)),
+                "selected_self": selected_self,
+            }
+            return render(request, 'org_edit_founder.html', ctx_dict)
+    
+    ctx_dict = {
+        "form": QueryUsersForm(),
+        "org_founders": parse_data(User, get_org_founders(org_id)),
+        "selected_self": selected_self,
+    }
+    return render(request, 'org_edit_founder.html', ctx_dict)
 
 

@@ -1,0 +1,29 @@
+<html>
+<head>
+    <title>Edit Organization</title>
+</head>
+
+<body>
+    <h1>Edit Organization</h1>
+    {{ status }}
+    <form method="POST">
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td><label for="org_name">Org Name:</label></td>
+                <td>{{ form.org_name }}</td>
+            </tr>
+            <tr>
+                <td><label for="org_address">Org Address:</label></td>
+                <td>{{ form.org_address }}</td>
+            </tr>
+            <tr>
+                <td><label for="org_phone">Org Phone:</label></td>
+                <td>{{ form.org_phone }}</td>
+            </tr>
+        </table>
+        <button type="submit" name="Edit">Edit</button>
+    </form>
+</body>
+
+</html>

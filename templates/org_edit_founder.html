@@ -1,0 +1,108 @@
+
+<html>
+    <head>
+        <title>Edit Founder</title>
+    </head>
+
+    <body>
+        <h1>Edit Founder</h1>
+        <section class="container">
+            <div class="left-half">
+                <article>
+                    <form method="post">
+                        {% csrf_token %}
+                        <table>
+                            <tr>
+                                <td><label for="user_name">User Name:</label></td>
+                                <td>{{ form.user_name }}</td>
+                            </tr>
+                            <tr>
+                                <td><label for="user_email">User Email:</label></td>
+                                <td>{{ form.email }}</td>
+                            <tr>
+                            <tr>
+                                <td><label for="user_phone">User Phone:</label></td>
+                                <td>{{ form.phone }}</td>
+                            </tr>
+                                <td>
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <button type="submit" formaction="../">Home</button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <button type="submit" name="Search">Search</button>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <h2>Organization Founders</h2>
+                        <table>
+                            <tr>
+                                <th>Founder_Name</th>
+                                <th>Founder_Email</th>
+                                <th>Founder_Phone</th>
+                            </tr>
+                            {% for founder in org_founders %}
+                            <tr>
+                                <td>{{ founder.user_name }}</td>
+                                <td>{{ founder.user_email }}</td>
+                                <td>{{ founder.user_phone }}</td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+
+                        <h2>Actions</h2>
+                        <p> Please use the search conditions above to identify one and only one user before performing actions. </p>
+                        {% if len_users == 1 %} 
+                            {% if selected_self %}
+                            <p> For safety, you can't manage yourself. You might need to find another manager to perform the actions for you. </p>
+                            {% else %}
+                            <p> You can now perform the following actions on the selected user. </p>
+                            <table>
+                                <tr>
+                                    <td><label for="action">Action</label>
+                                    <td>{{ form.action }}</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <button type="submit" name="Confirm_action">Confirm</button>
+                                    </td>
+                                </tr>
+                            </table>
+                            {% endif %}
+                        {% endif %}
+                    </form>
+
+                    {% if users is not None %}
+                    <h2>Search Results</h2>
+                    <p>Found {{ len_users }} results</p>
+                    <table>
+                        <tr>
+                            <th>User Name</th>
+                            <th>User Email</th>
+                            <th>User Phone</th>
+                        </tr>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.user_name }}</td>
+                            <td>{{ user.user_email }}</td>
+                            <td>{{ user.user_phone }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                    {% endif %}
+                </article>
+            </div>
+            <div class="right-half">
+                <article>
+    
+                </article>
+    
+            </div>
+        </section>
+
+    </body>
+
+
+</html>

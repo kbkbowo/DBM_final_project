@@ -1,0 +1,52 @@
+<!-- display the org infos -->
+
+<html>
+    <head>
+        <title>{{ org_info.org_name }}</title>
+    </head>
+    
+    <body>
+        <form action="../" method="get">
+            <button type="submit">Back</button>
+        </form>
+        <h1>{{ org_info.org_name }}</h1>
+        <h2>Organization Information</h2>
+        <table>
+            <tr>
+                <th>Org_ID</th>
+                <td>{{ org_info.org_id }}</td>
+            </tr>
+            <tr>
+                <th>Org_Name</th>
+                <td>{{ org_info.org_name }}</td>
+            </tr>
+            <tr>
+                <th>Address</th>
+                <td>{{ org_info.org_address }}</td>
+            </tr>
+            <tr>
+                <th>Phone_Num</th>
+                <td>{{ org_info.org_phone }}</td>
+            </tr>
+            <tr>
+                <th>Founded_Date</th>
+                <td>{{ org_info.org_founded_date }}</td>
+            </tr>
+        </table> 
+        <h2>Organization Founders</h2>
+        <table>
+            <tr>
+                <th>Founder_Name</th>
+                <th>Founder_Email</th>
+                <th>Founder_Phone</th>
+            </tr>
+            {% for founder in org_founders %}
+            <tr>
+                <td>{{ founder.user_name }}</td>
+                <td>{{ founder.user_email }}</td>
+                <td>{{ founder.user_phone }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </body>
+</html>

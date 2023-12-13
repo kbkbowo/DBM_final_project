@@ -11,4 +11,7 @@ urlpatterns = [
     path('manage_users/', views.manage_users, name='manage_users'),
     path('org_home/', views.org_home, name='org_home'),
     path('org_build/', views.org_build, name='org_build'),
+    path('org_home/<str:org_id>/', views.org_page, name='org_page'),
+    path('org_home/<str:org_id>/edit_info/', views.org_edit_info, name='org_edit_info'),
+    path('org_home/<str:org_id>/edit_founder/', views.org_edit_founder, name='org_edit_founder'),
 ]
