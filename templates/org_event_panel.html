@@ -1,0 +1,56 @@
+<html>
+
+<head>
+    <title>Event Panel</title>
+</head>
+
+<body>
+    <h1>Event Panel</h1>
+    <p>The event panel of organization {{ org_info.org_name }}</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" formaction="../../">Go Back</button>
+    </form>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" formaction="create_event/">Create Event</button>
+    </form>
+
+    <h2>Events list</h2>
+    <p>This organization has {{ org_events|length }} events.</p>
+    <!-- e.Event_ID, e.Event_date, e.Event_name, e.Capacity, e.Event_location, e.Event_description, e.Start_time, e.End_time -->
+    <table>
+        <tr>
+            <th>Event ID</th>
+            <th>Event Date</th>
+            <th>Event Name</th>
+            <th>Capacity</th>
+            <th>Number of Attendees</th>
+            <th>Event Location</th>
+            <th>Event Description</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Delete</th>
+        </tr>
+        {% for e in org_events %}
+        <tr>
+            <td>{{ e.event_id }}</td>
+            <td>{{ e.event_date }}</td>
+            <td>{{ e.event_name }}</td>
+            <td>{{ e.capacity }}</td>
+            <td>{{ e.num_attendees }}</td>
+            <td>{{ e.event_location }}</td>
+            <td>{{ e.event_description }}</td>
+            <td>{{ e.start_time }}</td>
+            <td>{{ e.end_time }}</td>
+            <td>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" formaction="{{ e.event_id }}/delete_event/">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

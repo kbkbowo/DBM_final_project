@@ -1,0 +1,23 @@
+<html>
+<head>
+    <title>Events</title>
+</head>
+
+<body>
+    <h1>Events</h1>
+    <p>Welcome, {{ user_level }} {{ user_name }}!</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" formaction="../">Home</button>
+    </form>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" formaction="../event_browse/">Browse/Join Events</button>
+    </form>
+    <h2>My Events</h2>
+    {{ events }}
+
+
+    
+    

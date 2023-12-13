@@ -23,6 +23,10 @@
         {% csrf_token %}
         <button type="submit" formaction="org_home/">Organization</button>
     </form>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" formaction="event/">Events</button>
+    </form>
     {% if user_level == "Admin" %}
     <h2 style="color:red">Admin Only</h2>
     <form method="post">

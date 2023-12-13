@@ -1,0 +1,138 @@
+<html>
+
+<head>
+    <title>Browse Events</title>
+</head>
+
+<body>
+    <h1>Browse Events</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" formaction="../">Home</button>
+    </form>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" formaction="../">Event Menu</button>
+    </form>
+
+    <!-- event_id = self.cleaned_data['event_id']
+    event_name = self.cleaned_data['event_name']
+    event_location = self.cleaned_data['event_location']
+    event_date = self.cleaned_data['event_date']
+    start_time = self.cleaned_data['start_time']
+    end_time = self.cleaned_data['end_time']
+    capacity = self.cleaned_data['capacity']
+    event_description = self.cleaned_data['event_description']
+    org_id = self.cleaned_data['org_id']
+    org_name = self.cleaned_data['org_name'] -->
+    <h2>My Events</h2>
+    {{ my_events }}
+
+    <h2>Browse Events</h2>
+    <form method="post">
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td><label for="event_id">Event ID:</label></td>
+                <td>{{ form.event_id }}</td>
+            </tr> 
+            <tr>
+                <td><label for="event_name">Event Name:</label></td>
+                <td>{{ form.event_name }}</td>
+            </tr>
+            <tr>
+                <td><label for="event_location">Event Location:</label></td>
+                <td>{{ form.event_location }}</td>
+            </tr>
+            <tr>
+                <td><label for="event_date_after">Event Date After:</label></td>
+                <td>{{ form.event_date_after }}</td>
+            </tr>
+            <tr>
+                <td><label for="event_date_before">Event Date Before:</label></td>
+                <td>{{ form.event_date_before }}</td>
+            </tr>
+            <tr>
+                <td><label for="start_time_after">Start Time After:</label></td>
+                <td>{{ form.start_time_after }}</td>
+            </tr>
+            <tr>
+                <td><label for="start_time_before">Start Time Before:</label></td>
+                <td>{{ form.start_time_before }}</td>
+            </tr>
+            <tr>
+                <td><label for="end_time_after">End Time After:</label></td>
+                <td>{{ form.end_time_after }}</td>
+            </tr>
+            <tr>
+                <td><label for="end_time_before">End Time Before:</label></td>
+                <td>{{ form.end_time_before }}</td>
+            </tr>
+            <tr>
+                <td><label for="vacancy_min">Vacancy Min:</label></td>
+                <td>{{ form.vacancy_min }}</td>
+            </tr>
+            <tr>
+                <td><label for="event_description">Event Description:</label></td>
+                <td>{{ form.event_description }}</td>
+            </tr>
+            <tr>
+                <td><label for="org_id">Organization ID:</label></td>
+                <td>{{ form.org_id }}</td>
+            </tr>
+            <tr>
+                <td><label for="org_name">Organization Name:</label></td>
+                <td>{{ form.org_name }}</td>
+            </tr>
+        </table>
+        <button type="submit" name="Search">Search</button>
+    </form>
+
+    <h2>Search Results</h2>
+    <p>Use the search button above to find the event you are interested in! You can join the events listed here by pressing the button.</p>
+    <p>Found {{ len_events }} events. </p>
+    
+    {% if len_events != 0 %}
+    <table>
+        <tr>
+            <th>Event ID</th>
+            <th>Event Name</th>
+            <th>Event Location</th>
+            <th>Event Date</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Capacity</th>
+            <th>Vacancy</th>
+            <th>Event Description</th>
+            <th>Organization ID</th>
+            <th>Organization Name</th>
+            <th>Join Event</th>
+        </tr>
+        {% for event in events %}
+        <tr>
+            <td>{{ event.event_id }}</td>
+            <td>{{ event.event_name }}</td>
+            <td>{{ event.event_location }}</td>
+            <td>{{ event.event_date }}</td>
+            <td>{{ event.start_time }}</td>
+            <td>{{ event.end_time }}</td>
+            <td>{{ event.capacity }}</td>
+            <td>{{ event.vacancy }}</td>
+            <td>{{ event.event_description }}</td>
+            <td>{{ event.org_id }}</td>
+            <td>{{ event.org_name }}</td>
+            <td>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" formaction="../event/{{ event.event_id }}/join">Join</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+</body>
+
+
+</html>

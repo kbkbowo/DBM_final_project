@@ -6,18 +6,17 @@ def get_db(config="configs/db_aws.yaml"):
     # Read config file
     with open(config, "r") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
-
     # Connect to an existing database
     conn = psycopg2.connect(host=config["ip"], dbname=config["name"], user=config["user"], password=config["pw"], port=5432)
-
     # Open a cursor to perform database operations
     cur = conn.cursor()
 
     return conn, cur
 
+conn, cur = get_db()
+
 def get_owned_orgs(data):
     user_id = data['user_id']
-    conn, cur = get_db()
     sql = f"""
     SELECT o.Org_ID, o.Org_name, o.Org_address, o.Org_phone_number, o.Org_founded_date
     FROM ORGANIZATION AS o
@@ -31,7 +30,6 @@ def get_owned_orgs(data):
 def validate_org_owner(data):
     user_id = data['user_id']
     org_id = data['org_id']
-    conn, cur = get_db()
     sql = f"""
     SELECT COUNT(*)
     FROM BUILD AS b
@@ -42,7 +40,6 @@ def validate_org_owner(data):
     return result[0] == 1
 
 def get_org_info(org_id):
-    conn, cur = get_db()
     sql = f"""
     SELECT o.Org_ID, o.Org_name, o.Org_address, o.Org_phone_number, o.Org_founded_date
     FROM ORGANIZATION AS o
@@ -53,7 +50,6 @@ def get_org_info(org_id):
     return result
 
 def get_org_founders(org_id):
-    conn, cur = get_db()
     sql = f"""
     SELECT u.User_ID, u.User_name, u.User_email, u.User_phone_number, u.User_level
     FROM USER_ AS u
@@ -65,7 +61,6 @@ def get_org_founders(org_id):
     return result
 
 def delete_org(org_id):
-    conn, cur = get_db()
     sql = f"""
     DELETE FROM ORGANIZATION
     WHERE Org_ID = '{org_id}';
@@ -75,7 +70,6 @@ def delete_org(org_id):
     return True
 
 def get_attending_orgs(user_id):
-    conn, cur = get_db()
     sql = f"""
     SELECT o.Org_ID, o.Org_name, o.Org_address, o.Org_phone_number, o.Org_founded_date
     FROM ORGANIZATION AS o
@@ -88,7 +82,6 @@ def get_attending_orgs(user_id):
     return result
 
 def leave_org(user_id, org_id):
-    conn, cur = get_db()
     sql = f"""
     UPDATE JOIN_
     SET Quit_date = CURRENT_DATE
@@ -99,7 +92,6 @@ def leave_org(user_id, org_id):
     return True
 
 def join_org(user_id, org_id):
-    conn, cur = get_db()
     sql = f"""
     INSERT INTO JOIN_
     VALUES ('{user_id}', '{org_id}', CURRENT_DATE, NULL);
@@ -108,16 +100,88 @@ def join_org(user_id, org_id):
     conn.commit()
     return True
 
+def get_org_events(org_id):
+    # sql = f"""
+    # SELECT e.Event_ID, e.Event_date, e.Event_name, e.Capacity, e.Event_location, e.Event_description, e.Start_time, e.End_time
+    # FROM EVENT AS e
+    #     JOIN HOLD AS h ON e.Event_ID = h.Event_ID
+    # WHERE h.Org_ID = '{org_id}'
+    # ORDER BY e.Event_date DESC;
+    # """
+    # additionally, get the number of attendees for each event
+    sql = f"""
+    SELECT e.Event_ID, e.Event_date, e.Event_name, e.Capacity, e.Event_location, e.Event_description, e.Start_time, e.End_time, COUNT(a.User_ID) AS Attendees
+    FROM EVENT AS e
+        JOIN HOLD AS h ON e.Event_ID = h.Event_ID
+        LEFT JOIN ATTEND AS a ON e.Event_ID = a.Event_ID
+    WHERE h.Org_ID = '{org_id}'
+    GROUP BY e.Event_ID
+    ORDER BY e.Event_date DESC;
+    """
 
+    cur.execute(sql)
+    result = cur.fetchall()
+    return result
 
-    
+def get_event_info(event_id):
+    sql = f"""
+    SELECT e.Event_ID, e.Event_date, e.Event_name, e.Capacity, e.Event_location, e.Event_description, e.Start_time, e.End_time
+    FROM EVENT AS e
+    WHERE e.Event_ID = '{event_id}';
+    """
+    cur.execute(sql)
+    result = cur.fetchone()
+    return result
 
-    
+def delete_event(event_id):
+    sql = f"""
+    DELETE FROM EVENT
+    WHERE Event_ID = '{event_id}';
+    """
+    cur.execute(sql)
+    conn.commit()
+    return True
 
+def get_user_events(user_id):
+    sql = f"""
+    SELECT e.Event_ID, e.Event_date, e.Event_name, e.Capacity, e.Event_location, e.Event_description, e.Start_time, e.End_time
+    FROM EVENT AS e
+        JOIN ATTEND AS a ON e.Event_ID = a.Event_ID
+    WHERE a.User_ID = '{user_id}'
+    ORDER BY e.Event_date DESC;
+    """
+    cur.execute(sql)
+    result = cur.fetchall()
+    return result
 
+def join_event(user_id, event_id):
+    ### need to be careful about the capacity
+    conn, cur = get_db()
+    sql = f"""
+    SELECT * FROM ATTEND FOR UPDATE;
 
-
-    
-    
-
-
+    INSERT INTO ATTEND
+    VALUES ('{user_id}', '{event_id}');
+    """
+    cur.execute(sql)
+    # make sure the event is not full
+    sql = f"""
+    SELECT COUNT(*)
+    FROM ATTEND
+    WHERE Event_ID = '{event_id}';
+    """
+    cur.execute(sql)
+    count = cur.fetchone()
+    sql = f"""
+    SELECT Capacity
+    FROM EVENT
+    WHERE Event_ID = '{event_id}';
+    """
+    cur.execute(sql)
+    capacity = cur.fetchone()
+    if count[0] > capacity[0]:
+        conn.rollback()
+        return False
+    else:
+        conn.commit()
+        return True

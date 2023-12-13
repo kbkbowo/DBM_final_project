@@ -18,4 +18,10 @@ urlpatterns = [
     path('org_home/<str:org_id>/delete/', views.org_delete, name='org_delete'),
     path('org_home/<str:org_id>/leave/', views.org_leave, name='org_leave'),
     path('org_home/<str:org_id>/join/', views.org_join, name='org_join'),
+    path('org_home/<str:org_id>/event_panel/', views.org_event_panel, name='org_event_panel'),
+    path('org_home/<str:org_id>/event_panel/create_event/', views.org_create_event, name='org_create_event'),
+    path('org_home/<str:org_id>/event_panel/<str:event_id>/delete_event/', views.org_delete_event, name='org_delete_event'),
+    path('event/', views.event, name='event'),
+    path('event_browse/', views.event_browse, name='event_browse'),
+    path('event/<str:event_id>/join', views.event_join, name='event_join'),
 ]

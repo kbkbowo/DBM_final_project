@@ -335,3 +335,117 @@ class JoinOrgForm(forms.Form):
             print(e)
             conn.rollback()
             return False
+        
+class CreateEventForm(forms.Form):
+    # e.Event_date, e.Event_name, e.Capacity, e.Event_location, e.Event_description, e.Start_time, e.End_time
+    event_date = forms.DateField(required=True)
+    event_name = forms.CharField(required=True)
+    capacity = forms.IntegerField(required=True)
+    event_location = forms.CharField(required=True)
+    event_description = forms.CharField(required=True)
+    start_time = forms.TimeField(required=True)
+    end_time = forms.TimeField(required=True)
+    
+    def execute_action(self, org_id):
+        conn, cur = get_db()
+        event_date = self.cleaned_data['event_date']
+        event_name = self.cleaned_data['event_name']
+        capacity = self.cleaned_data['capacity']
+        event_location = self.cleaned_data['event_location']
+        event_description = self.cleaned_data['event_description']
+        start_time = self.cleaned_data['start_time']
+        end_time = self.cleaned_data['end_time']
+        # Get the next event id
+        sql = """
+        SELECT Event_ID
+        FROM EVENT
+        ORDER BY Event_ID::int DESC
+        LIMIT 1;
+        """
+        cur.execute(sql)
+        result = cur.fetchall()
+        next_id = int(result[0][0]) + 1
+        # Insert the event
+        sql = f"""
+        INSERT INTO EVENT (Event_ID, Event_date, Event_name, Capacity, Event_location, Event_description, Start_time, End_time)
+        VALUES ('{next_id}', '{event_date}', '{event_name}', '{capacity}', '{event_location}', '{event_description}', '{start_time}', '{end_time}');
+
+        INSERT INTO HOLD (Event_ID, Org_ID)
+        VALUES ('{next_id}', '{org_id}');
+        """
+        cur.execute(sql)
+        print(f"successfully created event {event_name}")
+        print(next_id)
+        print(org_id)
+        conn.commit()
+        return True
+
+class BrowseEventForm(forms.Form):
+    event_id = forms.CharField(required=False)
+    event_name = forms.CharField(required=False)
+    event_location = forms.CharField(required=False)
+    event_date_after = forms.DateField(required=False)
+    event_date_before = forms.DateField(required=False)
+    start_time_after = forms.TimeField(required=False)
+    start_time_before = forms.TimeField(required=False)
+    end_time_after = forms.TimeField(required=False)
+    end_time_before = forms.TimeField(required=False)
+    vacancy_min = forms.IntegerField(required=False)
+    event_description = forms.CharField(required=False)
+    org_id = forms.CharField(required=False)
+    org_name = forms.CharField(required=False)
+
+    def query_search(self):
+        conn, cur = get_db()
+        event_id = self.cleaned_data['event_id']
+        event_name = self.cleaned_data['event_name']
+        event_location = self.cleaned_data['event_location']
+        event_date_after = self.cleaned_data['event_date_after']
+        event_date_before = self.cleaned_data['event_date_before']
+        start_time_after = self.cleaned_data['start_time_after']
+        start_time_before = self.cleaned_data['start_time_before']
+        end_time_after = self.cleaned_data['end_time_after']
+        end_time_before = self.cleaned_data['end_time_before']
+        vacancy_min = self.cleaned_data['vacancy_min']
+        event_description = self.cleaned_data['event_description']
+        org_id = self.cleaned_data['org_id']
+        org_name = self.cleaned_data['org_name']
+    
+        sql = f"""
+        WITH FilteredEvents AS (
+            SELECT e.Event_ID
+            FROM EVENT AS e
+                JOIN HOLD AS h ON e.Event_ID = h.Event_ID
+                JOIN ORGANIZATION AS o ON h.Org_ID = o.Org_ID
+            WHERE e.Event_ID LIKE '%{event_id}%'
+                AND e.Event_name LIKE '%{event_name}%' 
+                AND e.Event_location LIKE '%{event_location}%' 
+                AND o.Org_ID LIKE '%{org_id}%' 
+                AND o.Org_name LIKE '%{org_name}%'
+                AND e.Event_description LIKE '%{event_description}%' 
+                AND e.Event_date >= '{event_date_after if event_date_after else '0001-01-01'}'
+                AND e.Event_date <= '{event_date_before if event_date_before else '9999-12-31'}'
+                AND e.Start_time >= '{start_time_after if start_time_after else '00:00:00'}'
+                AND e.Start_time <= '{start_time_before if start_time_before else '23:59:59'}'
+                AND e.End_time >= '{end_time_after if end_time_after else '00:00:00'}'
+                AND e.End_time <= '{end_time_before if end_time_before else '23:59:59'}'
+        )
+        SELECT e.Event_ID, e.Event_date, e.Event_name, e.Capacity, 
+            (e.Capacity - COUNT(a.User_ID)) As Vacancy, 
+            e.Event_location, e.Event_description, e.Start_time, e.End_time, 
+            o.Org_ID, o.Org_name
+        FROM EVENT AS e
+            JOIN FilteredEvents fe ON e.Event_ID = fe.Event_ID
+            JOIN HOLD AS h ON e.Event_ID = h.Event_ID
+            JOIN ORGANIZATION AS o ON h.Org_ID = o.Org_ID
+            LEFT JOIN ATTEND AS a ON e.Event_ID = a.Event_ID
+        GROUP BY e.Event_ID, e.Event_date, e.Event_name, e.Capacity, e.Event_location, 
+                e.Event_description, e.Start_time, e.End_time, o.Org_ID, o.Org_name
+        HAVING (e.Capacity - COUNT(a.User_ID)) >= '{vacancy_min if vacancy_min else 0}'
+        ORDER BY e.Event_date DESC;
+        """
+        # check if exists
+        cur.execute(sql)
+        result = cur.fetchall()
+        self.event_data = result
+        return True

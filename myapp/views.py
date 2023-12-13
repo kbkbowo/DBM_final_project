@@ -1,5 +1,5 @@
 from django.shortcuts import render, HttpResponse, redirect
-from .forms import LoginForm, SignupForm, QueryUsersForm, ManageUserForm, BuildOrgForm, ManageFounderForm, JoinOrgForm
+from .forms import LoginForm, SignupForm, QueryUsersForm, ManageUserForm, BuildOrgForm, ManageFounderForm, JoinOrgForm, CreateEventForm, BrowseEventForm
 from .db_utils import *
 
 class User:
@@ -27,7 +27,46 @@ class Org:
         ### set attributes
         for k, v in self.dict.items():
             setattr(self, k, v)
+
+class Event:
+    # e.Event_ID, e.Event_date, e.Event_name, e.Capacity, e.Event_location, e.Event_description, e.Start_time, e.End_time
+    def __init__(self, event_id, event_date, event_name, capacity, event_location, event_description, start_time, end_time, num_attendees=None):
+        self.dict = {
+            "event_id": event_id,
+            "event_date": event_date,
+            "event_name": event_name,
+            "capacity": capacity,
+            "event_location": event_location,
+            "event_description": event_description,
+            "start_time": start_time,
+            "end_time": end_time,
+            "num_attendees": num_attendees,
+        }
+        ### set attributes
+        for k, v in self.dict.items():
+            setattr(self, k, v)
     
+
+# e.Event_ID, e.Event_date, e.Event_name, e.Capacity, (e.Capacity - COUNT(a.User_ID)) As Vacancy, e.Event_location, e.Event_description, e.Start_time, e.End_time, o.Org_ID, o.Org_name
+class BrowsedEvent:
+    def __init__(self, event_id, event_date, event_name, capacity, vacancy, event_location, event_description, start_time, end_time, org_id, org_name):
+        self.dict = {
+            "event_id": event_id,
+            "event_date": event_date,
+            "event_name": event_name,
+            "capacity": capacity,
+            "vacancy": vacancy,
+            "event_location": event_location,
+            "event_description": event_description,
+            "start_time": start_time,
+            "end_time": end_time,
+            "org_id": org_id,
+            "org_name": org_name,
+        }
+        ### set attributes
+        for k, v in self.dict.items():
+            setattr(self, k, v)
+
 
 def parse_data(cls, data):
     return [cls(*row) for row in data]
@@ -401,5 +440,101 @@ def org_join(request, org_id=-1):
 
     return render(request, 'org_join.html', {"status": status})
     
+def org_event_panel(request, org_id=-1):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'event_panel'
+        return redirect('login')
 
+    ctx_dict = {
+        "org_info": Org(*get_org_info(org_id)).dict,
+        "org_events": parse_data(Event, get_org_events(org_id)),
+    }
+    return render(request, 'org_event_panel.html', ctx_dict)
+
+def org_create_event(request, org_id=-1):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'event_create'
+        return redirect('login')
+
+    if request.method == 'POST':
+        form = CreateEventForm(request.POST)
+        if form.is_valid():
+            result = form.execute_action(org_id=org_id)
+            print(result)
+            return redirect('org_home')
+        else:
+            return render(request, 'org_create_event.html', {'form': form, 'status': 'Invalid inputs.'})
+        
+    return render(request, 'org_create_event.html', {'form': BuildOrgForm()})
+
+def org_delete_event(request, org_id, event_id):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'event_modify'
+        return redirect('login')
+    
+    # check if the user is the member of the org
+    if org_id not in [org.org_id for org in parse_data(Org, get_attending_orgs(request.session['user_data'][0]))]:
+        return redirect('org_home')
+    
+    if request.method == 'POST':
+        if "Delete" in request.POST:
+            delete_event(event_id)
+            return redirect('org_event_panel', org_id=org_id)
+        
+    event_info = Event(*get_event_info(event_id)).dict
+    return render(request, 'org_delete_event.html', {"event_info": event_info})
+
+def event(request):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'events'
+        return redirect('login')
+    
+    user_id = request.session['user_data'][0]
+    ctx_dict = {
+        "events": parse_data(Event, get_user_events(user_id)),
+    }
+    return render(request, 'event.html', ctx_dict)
+
+def event_browse(request):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'event_browse'
+        return redirect('login')
+
+    if request.method == 'POST':
+        form = BrowseEventForm(request.POST)
+        if form.is_valid():
+            if "Search" in request.POST:
+                form.query_search()
+                events = parse_data(BrowsedEvent, form.event_data)
+            else:
+                events = []
+
+            ctx_dict = {
+                "form": form,
+                "events": events if events else None,
+                "len_events": len(events),
+                "my_events": parse_data(Event, get_user_events(request.session['user_data'][0])),
+            }
+            return render(request, 'event_browse.html', ctx_dict)
+    
+    attending_events = parse_data(Event, get_user_events(request.session['user_data'][0]))
+    ctx_dict = {
+        "form": BrowseEventForm(),
+        "my_events": attending_events,
+    }
+    return render(request, 'event_browse.html', ctx_dict)
+
+def event_join(request, event_id=-1):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'event_join'
+        return redirect('login')
+    
+    user_id = request.session['user_data'][0]
+    try: 
+        join_event(user_id, event_id)
+        status = "Successfully joined this event."
+    except:
+        status = "Failed to join this event. An user can only join each event once per day."
+    
+    return render(request, 'event_join.html', {"status": status})
 
