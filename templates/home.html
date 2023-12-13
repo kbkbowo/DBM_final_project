@@ -1,35 +1,53 @@
 <!-- display login successful message -->
+{% extends 'baseHome.html' %} 
+{% block title %} Home {%endblock %}
 
-<html>
+{% block navPageName %}
+<div class="navbar-nav ms-auto">
+    <a class="navbar-brand" href="#">Home</a>
+</div>
+{% endblock %}
+
+{%block content %}
+
 
 <head>
     <title>Home</title>
 </head>
 
 <body>
-    <h1>Home</h1>
-    <p>Welcome, {{ user_level }} {{ user_name }}! Your user ID is {{ user_id }}</p>
+    <!-- <h1>Home</h1> -->
+    <p>Welcome, {{ user_level }} {{ user_name }}! Your user ID is {{ user_id }}</p> <br><br>
     <!-- <p><a href="logout/">Logout</a></p> -->
     <!-- make a button instead -->
-    <form method="post">
+    <!-- <form method="post">
         {% csrf_token %}
         <button type="submit" formaction="logout/">Logout</button>
     </form>
     <form method="post">
         {% csrf_token %}
         <button type="submit" formaction="profile/">Profile</button>
-    </form>
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit" formaction="org_home/">Organization</button>
-    </form>
-    {% if user_level == "Admin" %}
-    <h2 style="color:red">Admin Only</h2>
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit" name="redirect_manage_users">Manage Users</button>
-    </form>
-    {% endif %}
+    </form> -->
+    <div class="wrapper" style="width: 1000px; margin: 0 auto">
+        <div class="box1" style="width: 400px; float: left; background-color: beige;" >
+            <h2 style="color:rgb(0, 0, 0)">User Mode</h2>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" formaction="org_home/">Organization</button>
+            </form>
+        </div>
+        <div class="box2" style="width: 400px; float: right;background-color: rgb(234, 153, 129);">
+            {% if user_level == "Admin" %}
+            <h2 style="color:red">Admin Mode</h2>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" name="redirect_manage_users">Manage Users</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    
+
 </body>
 
-</html>
+{% endblock%}
