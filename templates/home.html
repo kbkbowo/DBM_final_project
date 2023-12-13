@@ -18,7 +18,12 @@
         {% csrf_token %}
         <button type="submit" formaction="profile/">Profile</button>
     </form>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" formaction="org_home/">Organization</button>
+    </form>
     {% if user_level == "Admin" %}
+    <h2 style="color:red">Admin Only</h2>
     <form method="post">
         {% csrf_token %}
         <button type="submit" name="redirect_manage_users">Manage Users</button>

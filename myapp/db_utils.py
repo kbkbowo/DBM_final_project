@@ -15,20 +15,26 @@ def get_db(config="configs/db_aws.yaml"):
 
     return conn, cur
 
-def validate_pw(form, username, pw):
+def get_owned_orgs(data):
+    user_id = data['user_id']
     conn, cur = get_db()
     sql = f"""
-    SELECT *
-    FROM USER_ AS u
-    WHERE u.User_email = '{username}' AND u.User_ID = '{pw}';
+    SELECT o.Org_ID, o.Org_name, o.Org_address, o.Org_phone_number, o.Org_founded_date
+    FROM ORGANIZATION AS o
+        JOIN BUILD AS b ON o.Org_ID = b.Org_ID
+    WHERE b.Founder_ID = '{user_id}';
     """
-    # check if exists   
     cur.execute(sql)
     result = cur.fetchall()
-    if len(result) == 0:
-        return False
-    else:
-        return True
+    return result
+
+
+
+
+    
+
+    
+
 
 
 

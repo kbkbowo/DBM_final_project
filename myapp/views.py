@@ -1,23 +1,42 @@
 from django.shortcuts import render, HttpResponse, redirect
-from .forms import LoginForm, SignupForm, QueryUsersForm, ManageUserForm
+from .forms import LoginForm, SignupForm, QueryUsersForm, ManageUserForm, BuildOrgForm
+from .db_utils import get_owned_orgs
 
 class User:
     def __init__(self, user_id, user_name, user_phone, user_email, user_level):
-        self.user_id = user_id
-        self.user_name = user_name
-        self.user_phone = user_phone
-        self.user_email = user_email
-        self.user_level = user_level
+        self.dict = {
+            "user_id": user_id,
+            "user_name": user_name,
+            "user_phone": user_phone,
+            "user_email": user_email,
+            "user_level": user_level,
+        }
+        ### set attributes
+        for k, v in self.dict.items():
+            setattr(self, k, v)
 
-def parse_user_datas(user_datas):
-    users = []
-    for row in user_datas:
-        users.append(User(*row))
-    return users
+class Org:
+    def __init__(self, org_id, org_name, org_address, org_phone, org_founded_date):
+        self.dict = {
+            "org_id": org_id,
+            "org_name": org_name,
+            "org_address": org_address,
+            "org_phone": org_phone,
+            "org_founded_date": org_founded_date,
+        }
+        ### set attributes
+        for k, v in self.dict.items():
+            setattr(self, k, v)
+    
+
+def parse_data(cls, data):
+    return [cls(*row) for row in data]
 
 def _get_form(request, formcls, prefix):
     data = request.POST if prefix in request.POST else None
     return formcls(data, prefix=prefix)
+
+
 
 # Create your views here.
 def login(request):
@@ -91,14 +110,14 @@ def manage_users(request):
                 form.cleaned_data = request.session['last_form']
 
             form.execute_action()
-            users = parse_user_datas(form.user_data)
+            users = parse_data(User, form.user_data)
 
             action_form = _get_form(request, ManageUserForm, 'Confirm_action')
             if action_form.is_valid():
                 request.session['last_action_form'] = action_form.cleaned_data
                 action_form.execute_action(request.session['selected_user']) # perform the action
                 form.execute_action() # refresh the user list
-                users = parse_user_datas(form.user_data)
+                users = parse_data(User, form.user_data)
             else:
                 last_action = request.session.get('last_action_form')
                 if last_action is not None:
@@ -120,3 +139,36 @@ def manage_users(request):
             return render(request, 'manage_users.html', ctx_dict)        
     request.session['last_page'] = 'manage_users'
     return render(request, 'manage_users.html', {'form': QueryUsersForm(prefix='Search')})
+
+def org_home(request):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'org_home'
+        return redirect('login')
+    
+    owned_orgs = parse_data(Org, get_owned_orgs(User(*request.session['user_data']).dict))
+    ctx_dict = {
+        "user_id": request.session['user_data'][0],
+        "user_name": request.session['user_data'][1],
+        "user_level": request.session['user_data'][4],
+        "owned_orgs": owned_orgs,
+    }
+    return render(request, 'org_home.html', ctx_dict)   
+
+def org_build(request):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'org_build'
+        return redirect('login')
+
+    if request.method == 'POST':
+        form = BuildOrgForm(request.POST)
+        if form.is_valid():
+            user_id = request.session['user_data'][0]
+            form.execute_action(user_id=user_id)
+            return redirect('org_home')
+        else:
+            return render(request, 'org_build.html', {'form': form, 'status': 'Invalid inputs.'})
+        
+    return render(request, 'org_build.html', {'form': BuildOrgForm()})
+
+
+

@@ -1,5 +1,6 @@
 from django import forms
 from .db_utils import get_db
+import time
 
 password = "0000" # dummy, just for testing
 
@@ -103,7 +104,6 @@ class QueryUsersForm(forms.Form):
         self.user_data = result
         return True
         
-
 class ManageUserForm(forms.Form):
     action_choices = forms.ChoiceField(choices=[('promote', 'Promote (Make Admin)'), ('demote', 'Demote (Make User)'), ('delete', 'Delete Account')], required=False)
 
@@ -144,3 +144,49 @@ class ManageUserForm(forms.Form):
             conn.rollback()
             return False
         
+
+"""
+    CREATE TABLE ORGANIZATION (
+        Org_ID VARCHAR(20) PRIMARY KEY,
+        Org_name VARCHAR(50) NOT NULL,
+        Org_address VARCHAR(100) NOT NULL,
+        Org_phone_number CHAR(16) NOT NULL,
+        Org_founded_date DATE NOT NULL
+    );"""
+
+class BuildOrgForm(forms.Form):
+    org_name = forms.CharField(required=True)
+    org_address = forms.CharField(required=True)
+    org_phone = forms.CharField(required=True)
+
+    def execute_action(self, user_id):
+        conn, cur = get_db()
+        org_name = self.cleaned_data['org_name']
+        org_address = self.cleaned_data['org_address']
+        org_phone = self.cleaned_data['org_phone']
+
+        # Get the next org id
+        sql = """
+        SELECT Org_ID
+        FROM ORGANIZATION
+        ORDER BY Org_ID::int DESC
+        LIMIT 1;
+        """
+        cur.execute(sql)
+        result = cur.fetchall()
+        next_id = int(result[0][0]) + 1
+        # get the founded date
+        founded_date = time.strftime('%Y-%m-%d', time.localtime())
+        # Insert the org
+        sql = f"""
+        INSERT INTO ORGANIZATION (Org_ID, Org_name, Org_address, Org_phone_number, Org_founded_date)
+        VALUES ('{next_id}', '{org_name}', '{org_address}', '{org_phone}', '{founded_date}');
+
+        INSERT INTO BUILD (Org_ID, Founder_ID)
+        VALUES ('{next_id}', '{user_id}');
+        """
+        
+        cur.execute(sql)
+        print(f"successfully created org {org_name}")
+        conn.commit()
+        return True

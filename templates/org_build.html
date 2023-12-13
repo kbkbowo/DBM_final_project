@@ -1,0 +1,25 @@
+<!-- similar to the signup page, lets user fill in informations to build a org -->
+
+<html>
+<head>
+    <title>Build Organization</title>
+</head>
+
+<body>
+    <h1>Build Organization</h1>
+    <form method="post">
+        {% csrf_token %}
+        <table>
+            {{ form.as_table }}
+        </table>
+        <button type="submit" name="Submit">Build</button>
+    </form>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" formaction="../org_home/">Cancel</button>
+    </form>
+</body>
+
+
+
+</html>

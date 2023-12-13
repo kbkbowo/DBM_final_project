@@ -1,0 +1,37 @@
+<html>
+    <head>
+        <title>Organization Home</title>
+    </head>
+
+    <body>
+        <h1>Organization Home</h1>
+        <!-- <p><a href="logout/">Logout</a></p> -->
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" formaction="../org_build/">Build Organization</button>
+        </form>
+        <!-- display {{ owned_orgs }} with a table-->
+        <h2>Owned Organizations: </h2>
+        <table>
+            <tr>
+                <th>Org_ID</th>
+                <th>Org_Name</th>
+                <th>Address</th>
+                <th>Phone_Num</th>
+                <th>Founded_Date</th>
+            </tr>
+            {% for org in owned_orgs %}
+            <tr>
+                <td>{{ org.org_id }}</td>
+                <td>{{ org.org_name }}</td>
+                <td>{{ org.org_address }}</td>
+                <td>{{ org.org_phone }}</td>
+                <td>{{ org.org_founded_date }}</td>
+            </tr>
+            {% endfor %}
+        <!-- Build org -->
+        
+    </body>
+
+
+</html>
