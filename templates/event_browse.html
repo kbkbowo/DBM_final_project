@@ -27,7 +27,31 @@
     org_id = self.cleaned_data['org_id']
     org_name = self.cleaned_data['org_name'] -->
     <h2>My Events</h2>
-    {{ my_events }}
+    <!-- # e.Event_ID, e.Event_date, e.Event_name, e.Capacity, e.Event_location, e.Event_description, e.Start_time, e.End_time -->
+    <table>
+        <tr>
+            <th>Event ID</th>
+            <th>Event Date</th>
+            <th>Event Name</th>
+            <th>Capacity</th>
+            <th>Event Location</th>
+            <th>Event Description</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+        </tr>
+        {% for e in my_events %}
+        <tr>
+            <td>{{ e.event_id }}</td>
+            <td>{{ e.event_date }}</td>
+            <td>{{ e.event_name }}</td>
+            <td>{{ e.capacity }}</td>
+            <td>{{ e.event_location }}</td>
+            <td>{{ e.event_description }}</td>
+            <td>{{ e.start_time }}</td>
+            <td>{{ e.end_time }}</td>
+        </tr>
+        {% endfor %}
+    </table>
 
     <h2>Browse Events</h2>
     <form method="post">

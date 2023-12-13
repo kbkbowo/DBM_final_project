@@ -5,7 +5,7 @@
 
 <body>
     <h1>Events</h1>
-    <p>Welcome, {{ user_level }} {{ user_name }}!</p>
+    <p>Welcome! This is your event overview page!</p>
     
     <form method="post">
         {% csrf_token %}
@@ -16,7 +16,31 @@
         <button type="submit" formaction="../event_browse/">Browse/Join Events</button>
     </form>
     <h2>My Events</h2>
-    {{ events }}
+    <!-- # e.Event_ID, e.Event_date, e.Event_name, e.Capacity, e.Event_location, e.Event_description, e.Start_time, e.End_time -->
+    <table>
+        <tr>
+            <th>Event ID</th>
+            <th>Event Date</th>
+            <th>Event Name</th>
+            <th>Capacity</th>
+            <th>Event Location</th>
+            <th>Event Description</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+        </tr>
+        {% for e in events %}
+        <tr>
+            <td>{{ e.event_id }}</td>
+            <td>{{ e.event_date }}</td>
+            <td>{{ e.event_name }}</td>
+            <td>{{ e.capacity }}</td>
+            <td>{{ e.event_location }}</td>
+            <td>{{ e.event_description }}</td>
+            <td>{{ e.start_time }}</td>
+            <td>{{ e.end_time }}</td>
+        </tr>
+        {% endfor %}
+    </table>
 
 
     

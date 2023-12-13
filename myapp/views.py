@@ -534,7 +534,7 @@ def event_join(request, event_id=-1):
         join_event(user_id, event_id)
         status = "Successfully joined this event."
     except:
-        status = "Failed to join this event. An user can only join each event once per day."
+        status = "Failed to join this event. Are you already in this event?."
     
     return render(request, 'event_join.html', {"status": status})
 
