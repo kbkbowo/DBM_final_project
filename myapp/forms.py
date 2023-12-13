@@ -202,6 +202,9 @@ class BuildOrgForm(forms.Form):
 
         INSERT INTO BUILD (Org_ID, Founder_ID)
         VALUES ('{next_id}', '{user_id}');
+
+        INSERT INTO JOIN_ (Org_ID, User_ID, Join_date)
+        VALUES ('{next_id}', '{user_id}', '{founded_date}');
         """
         
         cur.execute(sql)
@@ -234,7 +237,7 @@ class ManageFounderForm(forms.Form):
     phone = forms.CharField(required=False)
     action = forms.ChoiceField(choices=[('add', 'Add'), ('remove', 'Remove')], required=False)
 
-    def query_search(self):
+    def query_search(self, org_id):
         conn, cur = get_db()
         user_name = self.cleaned_data['user_name']
         email = self.cleaned_data['email']
@@ -243,7 +246,9 @@ class ManageFounderForm(forms.Form):
         sql = f"""
         SELECT u.User_ID, u.User_name, u.User_email, u.User_phone_number, u.User_level
         FROM USER_ AS u
-        WHERE u.User_name LIKE '%{user_name}%' 
+            JOIN JOIN_ AS j ON u.User_ID = j.User_ID
+        WHERE j.Org_ID = '{org_id}'
+            AND u.User_name LIKE '%{user_name}%' 
             AND u.User_email LIKE '%{email}%'
             AND u.User_phone_number LIKE '%{phone}%';
         """
@@ -282,4 +287,51 @@ class ManageFounderForm(forms.Form):
             conn.rollback()
             return False
  
+class JoinOrgForm(forms.Form):
+    # first ask the user to search for the org and then join
+    org_id = forms.CharField(required=False)
+    org_name = forms.CharField(required=False)
+    org_address = forms.CharField(required=False)
+    org_phone = forms.CharField(required=False)
+    org_founded_date = forms.CharField(required=False)
 
+    def query_search(self):
+        conn, cur = get_db()
+        org_id = self.cleaned_data['org_id']
+        org_name = self.cleaned_data['org_name']
+        org_address = self.cleaned_data['org_address']
+        org_phone = self.cleaned_data['org_phone']
+
+        sql = f"""
+        SELECT *
+        FROM ORGANIZATION AS o
+        WHERE o.Org_ID LIKE '%{org_id}%' 
+            AND o.Org_name LIKE '%{org_name}%' 
+            AND o.Org_address LIKE '%{org_address}%' 
+            AND o.Org_phone_number LIKE '%{org_phone}%'
+        """
+        # check if exists
+        cur.execute(sql)
+        result = cur.fetchall()
+        self.org_data = result
+        if len(result) == 1:
+            self.selected_org = result[0]
+        return True
+    
+    def execute_action(self, user_id):
+        conn, cur = get_db()
+        org_id = self.selected_org[0]
+        # get the founded date
+        join_date = time.strftime('%Y-%m-%d', time.localtime())
+        try:
+            sql = f"""
+            INSERT INTO JOIN_ (Org_ID, User_ID, Join_date)
+            VALUES ('{org_id}', '{user_id}', '{join_date}');
+            """
+            cur.execute(sql)
+            conn.commit()
+            return True
+        except Exception as e:
+            print(e)
+            conn.rollback()
+            return False

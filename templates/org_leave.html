@@ -1,0 +1,26 @@
+<html>
+<head>
+    <title>Leave Organization</title>
+</head>
+
+<!-- confimation page. Just a simple button -->
+<body>
+    <h1>Leave Organization</h1>
+    {% if last_founder %}
+    <p>Action failed because you are the last founder of {{ org_info.org_name }}.</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" formaction="../../">Go Back</button>
+    </form>
+    {% else %}
+    <p>Are you sure you want to leave organization  {{ org_info.org_name }}</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" formaction="../../">No, Go Back</button>
+    </form>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="Leave">Yes, Leave</button>
+    </form>
+    {% endif %}
+</html>

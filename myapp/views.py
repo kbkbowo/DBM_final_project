@@ -1,6 +1,6 @@
 from django.shortcuts import render, HttpResponse, redirect
-from .forms import LoginForm, SignupForm, QueryUsersForm, ManageUserForm, BuildOrgForm, ManageFounderForm
-from .db_utils import get_owned_orgs, validate_org_owner, get_org_info, get_org_founders 
+from .forms import LoginForm, SignupForm, QueryUsersForm, ManageUserForm, BuildOrgForm, ManageFounderForm, JoinOrgForm
+from .db_utils import *
 
 class User:
     def __init__(self, user_id, user_name, user_email, user_phone, user_level):
@@ -177,11 +177,13 @@ def org_home(request):
         return redirect('login')
     
     owned_orgs = parse_data(Org, get_owned_orgs(User(*request.session['user_data']).dict))
+    attending_orgs = parse_data(Org, get_attending_orgs(request.session['user_data'][0]))
     ctx_dict = {
         "user_id": request.session['user_data'][0],
         "user_name": request.session['user_data'][1],
         "user_level": request.session['user_data'][4],
         "owned_orgs": owned_orgs,
+        "attending_orgs": attending_orgs,
     }
     return render(request, 'org_home.html', ctx_dict)   
 
@@ -207,10 +209,16 @@ def org_page(request, org_id=-1):
     
     org_info = Org(*get_org_info(org_id)).dict
     org_founders = parse_data(User, get_org_founders(org_id))
+    attended_orgs = parse_data(Org, get_attending_orgs(request.session['user_data'][0]))
+    if org_id in [org.org_id for org in attended_orgs]:
+        attending = True
+    else:
+        attending = False
 
     ctx_dict = {
         "org_info": org_info,
         "org_founders": org_founders,
+        "attending": attending,
     }
 
     return render(request, 'org_page.html', ctx_dict)
@@ -220,9 +228,16 @@ def org_edit_info(request, org_id=-1):
         request.session['last_page'] = 'org_edit'
         return redirect('login')
     # validate user's ownership of the org
-    ownership = validate_org_owner({'user_id': request.session['user_data'][0], 'org_id': org_id})
-    if not ownership:
-        return redirect('org_home')
+    if request.session.get('ownership') is None:
+        request.session['ownership'] = []
+    
+    if org_id not in request.session['ownership']:
+        ownership = validate_org_owner({'user_id': request.session['user_data'][0], 'org_id': org_id})
+        if not ownership:
+            return redirect('org_home')
+        else: 
+            request.session['ownership'].append(org_id)
+            request.session.modified = True
     
     org_info = Org(*get_org_info(org_id)).dict
     if request.method == 'POST':
@@ -261,11 +276,11 @@ def org_edit_founder(request, org_id=-1):
         form = ManageFounderForm(request.POST)
         if form.is_valid():
             if "Search" in request.POST:
-                form.query_search()
+                form.query_search(org_id=org_id)
                 if form.selected_user[0] == request.session['user_data'][0]:
                     selected_self = True
             elif "Confirm_action" in request.POST:
-                form.query_search()
+                form.query_search(org_id=org_id)
                 if form.selected_user[0] != request.session['user_data'][0]:
                     form.execute_action(org_id=org_id)
                 else:
@@ -287,5 +302,104 @@ def org_edit_founder(request, org_id=-1):
         "selected_self": selected_self,
     }
     return render(request, 'org_edit_founder.html', ctx_dict)
+
+def org_delete(request, org_id=-1):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'org_delete'
+        return redirect('login')
+    # validate user's ownership of the org
+    if request.session.get('ownership') is None:
+        request.session['ownership'] = []
+    
+    if org_id not in request.session['ownership']:
+        ownership = validate_org_owner({'user_id': request.session['user_data'][0], 'org_id': org_id})
+        if not ownership:
+            return redirect('org_home')
+        else: 
+            request.session['ownership'].append(org_id)
+            request.session.modified = True
+
+    if request.method == 'POST':
+        if "Delete" in request.POST:
+            delete_org(org_id)
+            return redirect('org_home')
+    
+    org_info = Org(*get_org_info(org_id)).dict
+    return render(request, 'org_delete.html', {"org_info": org_info})
+
+def org_leave(request, org_id=-1):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'org_leave'
+        return redirect('login')
+    
+    founders = get_org_founders(org_id)
+    # stop the last founder from leaving
+    if len(founders) == 1 and founders[0][0] == request.session['user_data'][0]:
+        last_founder = True
+    else:
+        last_founder = False
+    
+    if request.method == 'POST':
+        if "Leave" in request.POST:
+            user_id = request.session['user_data'][0]
+            leave_org(user_id, org_id)
+            return redirect('org_home')
+    
+    org_info = Org(*get_org_info(org_id)).dict
+    return render(request, 'org_leave.html', {"org_info": org_info, "last_founder": last_founder})
+
+def org_browse(request):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'org_join'
+        return redirect('login')
+    
+    if request.method == 'POST':
+        form = JoinOrgForm(request.POST)
+        if form.is_valid():
+            if "Search" in request.POST:
+                form.query_search()
+                orgs = parse_data(Org, form.org_data)
+            elif "Confirm_action" in request.POST:
+                form.query_search()
+                form.execute_action()
+                orgs = parse_data(Org, form.org_data)
+            else:
+                orgs = []
+
+            ctx_dict = {
+                "form": form,
+                "orgs": orgs if orgs else None,
+                "len_orgs": len(orgs),
+                "attending_orgs": parse_data(Org, get_attending_orgs(request.session['user_data'][0])),
+            }
+            return render(request, 'org_browse.html', ctx_dict)
+
+        
+    attending_orgs = parse_data(Org, get_attending_orgs(request.session['user_data'][0]))
+    ctx_dict = {
+        "form": QueryUsersForm(),
+        "attending_orgs": attending_orgs,
+    }
+    return render(request, 'org_browse.html', ctx_dict)
+
+def org_join(request, org_id=-1):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'org_join'
+        return redirect('login')
+        
+    attending_orgs = parse_data(Org, get_attending_orgs(request.session['user_data'][0]))
+    if org_id in [org.org_id for org in attending_orgs]:
+        status = "You are already in this organization."
+    else:
+        user_id = request.session['user_data'][0]
+        try: 
+            join_org(user_id, org_id)
+            status = "Successfully joined this organization."
+        except:
+            status = "Failed to join this organization. An user can only join each organization once per day."
+        
+
+    return render(request, 'org_join.html', {"status": status})
+    
 
 

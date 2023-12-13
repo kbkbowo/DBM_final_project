@@ -64,6 +64,49 @@ def get_org_founders(org_id):
     result = cur.fetchall()
     return result
 
+def delete_org(org_id):
+    conn, cur = get_db()
+    sql = f"""
+    DELETE FROM ORGANIZATION
+    WHERE Org_ID = '{org_id}';
+    """
+    cur.execute(sql)
+    conn.commit()
+    return True
+
+def get_attending_orgs(user_id):
+    conn, cur = get_db()
+    sql = f"""
+    SELECT o.Org_ID, o.Org_name, o.Org_address, o.Org_phone_number, o.Org_founded_date
+    FROM ORGANIZATION AS o
+        JOIN JOIN_ AS j ON o.Org_ID = j.Org_ID
+    WHERE j.User_ID = '{user_id}'
+        AND j.Quit_date IS NULL;
+    """
+    cur.execute(sql)
+    result = cur.fetchall()
+    return result
+
+def leave_org(user_id, org_id):
+    conn, cur = get_db()
+    sql = f"""
+    UPDATE JOIN_
+    SET Quit_date = CURRENT_DATE
+    WHERE Org_ID = '{org_id}' AND User_ID = '{user_id}';
+    """
+    cur.execute(sql)
+    conn.commit()
+    return True
+
+def join_org(user_id, org_id):
+    conn, cur = get_db()
+    sql = f"""
+    INSERT INTO JOIN_
+    VALUES ('{user_id}', '{org_id}', CURRENT_DATE, NULL);
+    """
+    cur.execute(sql)
+    conn.commit()
+    return True
 
 
 

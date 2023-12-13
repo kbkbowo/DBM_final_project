@@ -27,7 +27,7 @@
                                 <td>
                                     <form method="post">
                                         {% csrf_token %}
-                                        <button type="submit" formaction="../">Home</button>
+                                        <button type="submit" formaction="../../">Go Back</button>
                                     </form>
                                 </td>
                                 <td>
@@ -53,7 +53,7 @@
                         </table>
 
                         <h2>Actions</h2>
-                        <p> Please use the search conditions above to identify one and only one user before performing actions. </p>
+                        <p> Please use the search conditions above to identify one and only one member before performing actions. </p>
                         {% if len_users == 1 %} 
                             {% if selected_self %}
                             <p> For safety, you can't manage yourself. You might need to find another manager to perform the actions for you. </p>

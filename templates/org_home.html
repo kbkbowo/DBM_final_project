@@ -14,8 +14,12 @@
             {% csrf_token %}
             <button type="submit" formaction="../org_build/">Build Organization</button>
         </form>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" formaction="../org_browse/">Browse/Join Organization</button>
+        </form>
         <!-- display {{ owned_orgs }} with a table-->
-        <h2>Owned Organizations: </h2>
+        <h2>Organizations as Founder: </h2>
         <table>
             <tr>
                 <th>Org_ID</th>
@@ -25,6 +29,8 @@
                 <th>Founded_Date</th>
                 <th>Homepage</th>
                 <th>Edit info</th>
+                <th>Edit founder</th>
+                <th>Delete</th>
             </tr>
             {% for org in owned_orgs %}
             <tr>
@@ -34,14 +40,36 @@
                 <td>{{ org.org_phone }}</td>
                 <td>{{ org.org_founded_date }}</td>
                 <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}">Homepage</button></form></td>
-                <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}/edit_info">Edit</button></form></td>
+                <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}/edit_info">Edit info</button></form></td>
                 <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}/edit_founder">Edit Founder</button></form></td>
+                <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}/delete">Delete</button></form></td>
             </tr>
             {% endfor %}
         </table>
+
+        <h2>Organizations as Member: </h2>
+        <table>
+            <tr>
+                <th>Org_ID</th>
+                <th>Org_Name</th>
+                <th>Address</th>
+                <th>Phone_Num</th>
+                <th>Founded_Date</th>
+                <th>Homepage</th>
+                <th>Leave</th>
+            </tr>
+            {% for org in attending_orgs %}
+            <tr>
+                <td>{{ org.org_id }}</td>
+                <td>{{ org.org_name }}</td>
+                <td>{{ org.org_address }}</td>
+                <td>{{ org.org_phone }}</td>
+                <td>{{ org.org_founded_date }}</td>
+                <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}">Homepage</button></form></td>
+                <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}/leave">Leave</button></form></td>
+            </tr>
+            {% endfor %}
+        </table>        
         <!-- Build org -->
-        
     </body>
-
-
 </html>

@@ -1,0 +1,18 @@
+<html>
+<head>
+    <title>Delete Organization</title>
+</head>
+
+<!-- confimation page. Just a simple button -->
+<body>
+    <h1>Delete Organization</h1>
+    <p>Are you sure you want to delete organization {{ org_info.org_name }}?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" formaction="../../">No, Go Back</button>
+    </form>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="Delete">Yes, Delete</button>
+    </form>
+</html>
