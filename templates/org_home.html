@@ -8,6 +8,10 @@
         <!-- <p><a href="logout/">Logout</a></p> -->
         <form method="post">
             {% csrf_token %}
+            <button type="submit" formaction="../">Personal Home</button>
+        </form>
+        <form method="post">
+            {% csrf_token %}
             <button type="submit" formaction="../org_build/">Build Organization</button>
         </form>
         <!-- display {{ owned_orgs }} with a table-->

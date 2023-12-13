@@ -43,10 +43,11 @@ def login(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
-            request.session['user_data'] = form.user_data
-            return redirect(request.session.get('last_page', 'home'))
-        else:
-            return render(request, 'login.html', {'form': form, 'status': 'Invalid username or password.'})   
+            if form.execute_action():
+                request.session['user_data'] = form.user_data
+                return redirect(request.session.get('last_page', 'home'))
+        
+        return render(request, 'login.html', {'form': form, 'status': 'Invalid username or password.'})   
     return render(request, 'login.html', {'form': LoginForm()})
 
 def home(request):
@@ -80,6 +81,36 @@ def profile(request):
     }
         
     return render(request, 'profile.html', ctx_dict)
+
+def edit_profile(request):
+    # redirect to login page if not logged in
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'edit_profile'
+        return redirect('login')
+
+    # get the form with current user data
+    user_dict = {
+        "username": request.session['user_data'][1],
+        "phone": request.session['user_data'][2],
+        "email": request.session['user_data'][3],
+    }
+    
+    if request.method == 'POST':
+        form = SignupForm(request.POST)
+        if form.is_valid():
+            success = form.update_user_data(user_id=request.session['user_data'][0])
+            if success: 
+                request.session['user_data'][:4] = form.user_data
+                request.session.modified = True
+            else:
+                return render(request, 'edit_profile.html', {'form': form, 'status': 'Invalid inputs.'})
+            return redirect('profile')
+        else:
+            print(form.errors)
+    
+    form = SignupForm(initial=user_dict)
+    form.cleaned_data = user_dict
+    return render(request, 'edit_profile.html', {'form': form})
 
 def signup(request):
     if request.method == 'POST':

@@ -8,10 +8,7 @@ class LoginForm(forms.Form):
     username = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput)
 
-    def is_valid(self):
-        valid = super(LoginForm, self).is_valid()
-        if not valid:
-            return False
+    def execute_action(self):
         conn, cur = get_db()
         username = self.cleaned_data['username']
         password = self.cleaned_data['password']
@@ -34,25 +31,23 @@ class SignupForm(forms.Form):
     phone = forms.CharField()
     email = forms.CharField()
 
-    def is_valid(self):
-        valid = super(SignupForm, self).is_valid()
-        if not valid:
-            return False
+    def execute_action(self):
         conn, cur = get_db()
         username = self.cleaned_data['username']
         phone = self.cleaned_data['phone']
         email = self.cleaned_data['email']
-        sql = f"""
-        SELECT *
-        FROM USER_ AS u
-        WHERE u.User_email = '{email}';
-        """
-        # check if exists
-        cur.execute(sql)
-        result = cur.fetchall()
+        try: 
+            sql = f"""
+            SELECT *
+            FROM USER_ AS u
+            WHERE u.User_email = '{email}';
+            """
+            # check if exists
+            cur.execute(sql)
+            result = cur.fetchall()
 
-        if len(result) == 0:
-            # Get the next user id
+            assert len(result) == 0 # if exists, raise error
+
             sql = """
             SELECT User_ID
             FROM USER_
@@ -71,8 +66,46 @@ class SignupForm(forms.Form):
             conn.commit()
             self.user_data = [next_id, username, phone, email, 'User']
             return True
+        except Exception as e:
+            print(e)
+            conn.rollback()
+            return False
 
-        return False
+    def update_user_data(self, user_id):
+        conn, cur = get_db()
+        username = self.cleaned_data['username']
+        phone = self.cleaned_data['phone']
+        email = self.cleaned_data['email']
+        try:
+            sql = f"""
+            SELECT *
+            FROM USER_ AS u
+            WHERE u.User_email = '{email}'
+                AND u.User_ID != '{user_id}';
+            """
+            # check if exists
+            cur.execute(sql)
+            result = cur.fetchall()
+
+            assert len(result) == 0 # if exists, raise error
+
+            sql = f"""
+            UPDATE USER_
+            SET User_name = '{username}', User_phone_number = '{phone}', User_email = '{email}'
+            WHERE User_ID = '{user_id}';
+            """
+            cur.execute(sql)
+            conn.commit()
+            self.user_data = [user_id, username, phone, email]
+
+            return True
+        except Exception as e:
+            print(e)
+            conn.rollback()
+            return False
+        
+
+        
 
 class QueryUsersForm(forms.Form):
     user_id = forms.CharField(required=False)
