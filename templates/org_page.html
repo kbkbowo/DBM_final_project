@@ -1,29 +1,36 @@
 <!-- display the org infos -->
+{% extends 'baseOrghome.html' %} 
+{% block title %} Org_page {%endblock %}
 
-<html>
+{% block navPageName %}
+    <a class="navbar-brand" href="#">Organization Home Page</a>
+{% endblock %}
+
+{%block content %}
+    <div class = "form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto; ">
     <head>
         <title>{{ org_info.org_name }}</title>
     </head>
     
-    <body>
         <h1>{{ org_info.org_name }}</h1>
-        <table>
-            <tr>
-                <td><form action="../" method="get"><button type="submit">Back</button></form></td>
-                {% if not attending %}
-                <td><form action="join/" method="get"><button type="submit">Join</button></form></td>
-                {% else %}
-                <td><form action="leave/" method="get"><button type="submit">Leave</button></form></td>
-                {% endif %}
-            </tr>
-        </table>
         {% if attending %}
         <p>You are currently in this organization.</p>
         {% else %}
         <p>You are currently not in this organization.</p>
         {% endif %}
+        <div class = "container" style="display: flex; justify-content:space-around; margin-top: 5px; margin-bottom: 10px;"> 
+                <form action="../" method="get"><button type="submit">Back</button></form>
+                {% if not attending %}
+                <form action="join/" method="get"><button type="submit">Join</button></form>
+                {% else %}
+                <form action="leave/" method="get"><button type="submit">Leave</button></form>
+                {% endif %}
+        </div>
+    
+        
 
         <h2>Organization Information</h2>
+        <div class="form-container" style=" width: fit-content; margin: 0 auto; margin-bottom: 10px;">
         <table>
             <tr>
                 <th>Org_ID</th>
@@ -45,8 +52,10 @@
                 <th>Founded_Date</th>
                 <td>{{ org_info.org_founded_date }}</td>
             </tr>
-        </table> 
+        </table>
+        </div>
         <h2>Organization Founders</h2>
+        <div class="form-container" style=" width: fit-content; margin: 0 auto;">
         <table>
             <tr>
                 <th>Founder_Name</th>
@@ -61,5 +70,7 @@
             </tr>
             {% endfor %}
         </table>
-    </body>
-</html>
+    </div>
+    </div>
+
+{% endblock %}

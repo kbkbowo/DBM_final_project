@@ -9,6 +9,14 @@
 
 
 {% block content%}
+
+<style>
+
+    th, td {
+        text-align: right;
+        vertical-align: top; 
+    }
+</style>
 <head>
     <title>Edit Profile</title>
 </head>
@@ -17,6 +25,7 @@
     <!-- <h1>Edit Profile</h1> -->
     {{ status }}
     <div class="form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto">
+        <h2>Edit Profile</h2>
         <form method="POST">
             {% csrf_token %}
             <table style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px;">
