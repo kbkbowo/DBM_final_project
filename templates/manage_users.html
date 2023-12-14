@@ -16,7 +16,6 @@
                 <form method="post">
                     {% csrf_token %}
                     <table>
-                        {{ form }}
                         <tr>
                             <td><label for="user_id">User ID:</label></td>
                             <td>{{ form.user_id }}</td>
@@ -27,15 +26,15 @@
                         </tr>
                         <tr>
                             <td><label for="user_email">User Email:</label></td>
-                            <td>{{ form.user_email }}</td>
+                            <td>{{ form.email }}</td>
                         </tr>
                         <tr>
                             <td><label for="user_phone">User Phone:</label></td>
-                            <td>{{ form.user_phone }}</td>
+                            <td>{{ form.phone }}</td>
                         </tr>
                         <tr>
                             <td><label for="user_level">User Level:</label></td>
-                            <td>{{ form.user_level }}</td>
+                            <td>{{ form.level }}</td>
                         </tr>
                         <tr>
                             <td>
