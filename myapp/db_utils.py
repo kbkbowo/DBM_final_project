@@ -1,6 +1,7 @@
 import psycopg2
 import yaml
 import pandas as pd
+import json
 
 def get_db(config="configs/db_aws.yaml"):
     # Read config file
@@ -185,3 +186,50 @@ def join_event(user_id, event_id):
     else:
         conn.commit()
         return True
+
+def get_org_animals(org_id):
+    sql = f"""
+    SELECT a.Animal_ID, a.Animal_type, a.Animal_name, a.Animal_status, a.Reported_date, a.Reported_reason, a.Reported_location, a.Shelter_date, a.Adopt_user_ID, a.Report_user_ID
+    FROM ANIMAL AS a
+    WHERE a.Org_ID = '{org_id}'
+    ORDER BY a.Shelter_date DESC;
+    """
+    cur.execute(sql)
+    result = cur.fetchall()
+    return result
+
+def get_unsheltered_animals():
+    sql = f"""
+    SELECT a.Animal_ID, a.Animal_type, a.Animal_name, a.Animal_status, a.Reported_date, a.Reported_reason, a.Reported_location, a.Shelter_date, a.Adopt_user_ID, a.Report_user_ID
+    FROM ANIMAL AS a
+    WHERE a.Org_ID IS NULL
+    ORDER BY a.Reported_date;
+    """
+    cur.execute(sql)
+    result = cur.fetchall()
+    return result
+
+def shelter_animal(org_id, animal_id):
+    try:
+        sql = f"""
+        UPDATE ANIMAL
+        SET Org_ID = '{org_id}', Shelter_date = CURRENT_DATE
+        WHERE Animal_ID = '{animal_id}';
+        """
+        cur.execute(sql)
+        conn.commit()
+        return True
+    except:
+        conn.rollback()
+        return False
+
+def get_animal_info(animal_id):
+    sql = f"""
+    SELECT a.Animal_ID, a.Animal_type, a.Animal_name, a.Animal_status, a.Reported_date, a.Reported_reason, a.Reported_location, a.Shelter_date, a.Adopt_user_ID, a.Report_user_ID
+    FROM ANIMAL AS a
+    WHERE a.Animal_ID = '{animal_id}';
+    """
+    cur.execute(sql)
+    result = cur.fetchone()
+    return result
+

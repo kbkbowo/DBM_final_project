@@ -2,7 +2,7 @@ import psycopg2
 import yaml
 import pandas as pd
 
-def get_db(config="configs/db_aws.yaml"):
+def get_db(config="../configs/db_aws.yaml"):
     # Read config file
     with open(config, "r") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
@@ -176,21 +176,16 @@ def create_tables(conn, cur):
     tables = pd.DataFrame(cur.fetchall(), columns=['table_name'])
     print("\ntables\n", tables)
 
-def insert_data_from_xlsx(conn, cur, xlsx_path="../data/data.xlsx"):
-    table_names_map = {
-        "users": "USER_",
-        "events": "EVENT",
-        "orgs": "ORGANIZATION",
-        "hospitals": "HOSPITAL",
-        "animals": "ANIMAL",
-        "attends": "ATTEND",
-        "holds": "HOLD",
-        "joins": "JOIN_",
-        "builds": "BUILD",
-        "donates": "DONATE",
-        "lend_supplements": "LEND_SUPPLEMENT",
-        "sent_tos": "SENT_TO"
-    }
-    df = pd.read_excel(xlsx_path, sheet_name=None)
-    
-    
+def drop_nonnull(table, col):
+    conn, cur = get_db()
+    sql = f"""
+    ALTER TABLE {table}
+    ALTER COLUMN {col} DROP NOT NULL;
+    """
+    cur.execute(sql)
+    conn.commit()
+
+if __name__ == "__main__":
+    table = "ANIMAL"
+    col = "Org_ID"
+    drop_nonnull(table, col)

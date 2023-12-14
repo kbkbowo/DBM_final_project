@@ -1,0 +1,39 @@
+{% extends 'baseHome.html' %} 
+{% block title %} Home {%endblock %}
+
+{%block content %}
+<head>
+    <title>Report Animal</title>
+</head>
+
+<body>
+    <h1>Report Animal</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ status }}
+        <table>
+            <tr>
+                <td>Animal Type:</td>
+                <td>{{ form.animal_type }}</td>
+            </tr>
+            <tr>
+                <td>Animal Name:</td>
+                <td>{{ form.animal_name }}</td>
+            </tr>
+            <tr>
+                <td>Report Reason:</td>
+                <td>{{ form.reported_reason }}</td>
+            </tr>
+            <tr>
+                <td>Report Location:</td>
+                <td>{{ form.reported_loacation }}</td>
+            </tr>
+            <tr>
+                <td> </td>
+                <td><button type="submit" name="Submit">Submit</button></td>
+            </tr>
+        </table>
+    </form>
+</body>
+    
+{% endblock%}   

@@ -1,6 +1,7 @@
 from django import forms
 from .db_utils import get_db
 import time
+import json
 
 class LoginForm(forms.Form):
     username = forms.CharField()
@@ -449,4 +450,39 @@ class BrowseEventForm(forms.Form):
         result = cur.fetchall()
         self.event_data = result
         return True
-    
+
+with open("data/animal_type.json", "r", encoding="utf-8") as f:
+    animal_types = json.load(f)
+class ReportAnimalForm(forms.Form):
+    animal_type = forms.ChoiceField(choices=[(animal_type, animal_type) for animal_type in animal_types])
+    animal_name = forms.CharField()
+    reported_reason = forms.CharField()
+    reported_loacation = forms.CharField()
+
+    def execute_action(self, user_id):
+        conn, cur = get_db()
+        animal_type = self.cleaned_data['animal_type']
+        animal_name = self.cleaned_data['animal_name']
+        reported_reason = self.cleaned_data['reported_reason']
+        reported_loacation = self.cleaned_data['reported_loacation']
+        # Get the next animal id
+        sql = """
+        SELECT Animal_ID
+        FROM ANIMAL
+        ORDER BY Animal_ID::int DESC
+        LIMIT 1;
+        """
+        cur.execute(sql)
+        result = cur.fetchall()
+        next_id = int(result[0][0]) + 1
+        # get the founded date
+        reported_date = time.strftime('%Y-%m-%d', time.localtime())
+        # Insert the animal
+        sql = f"""
+        INSERT INTO ANIMAL (Animal_ID, Animal_type, Animal_name, Animal_status, Reported_date, Reported_reason, Reported_location, Report_user_id)
+        VALUES ('{next_id}', '{animal_type}', '{animal_name}', 'Sheltered', '{reported_date}', '{reported_reason}', '{reported_loacation}', '{user_id}');
+        """
+        cur.execute(sql)
+        print(f"successfully created animal {animal_name}")
+        conn.commit()
+        return True

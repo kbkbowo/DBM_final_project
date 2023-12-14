@@ -1,0 +1,79 @@
+
+<head>
+    <title>Animal Panel</title>
+</head>
+
+<body>
+    <h1>Animal Panel</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" formaction="../../">Back</button>
+    </form>
+
+    <h2>Unsheltered Animals</h2>
+    {% if unsheltered_animals|length == 0 %}
+    <p>No animals needs help currently!</p>
+    {% else %}
+    <p>These animals reported by users needs help!</p>
+    <table>
+        <!-- self, animal_id, animal_type, animal_name, animal_status, reported_date, reported_reason, reported_location, shelter_date, adopt_user_id, report_user_id -->
+        <tr>
+            <th>Animal ID</th>
+            <th>Animal Type</th>
+            <th>Animal Name</th>
+            <th>Reported Date</th>
+            <th>Reported Reason</th>
+            <th>Reported Location</th>
+            <th>Shelter</th>
+        </tr>
+        {% for animal in unsheltered_animals %}
+        <tr>
+            <td>{{ animal.animal_id }}</td>
+            <td>{{ animal.animal_type }}</td>
+            <td>{{ animal.animal_name }}</td>
+            <td>{{ animal.reported_date }}</td>
+            <td>{{ animal.reported_reason }}</td>
+            <td>{{ animal.reported_location }}</td>
+            <td>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" formaction="{{ animal.animal_id }}/shelter/">Shelter</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    <h2>Sheltered Animals</h2>
+    <table>
+        <!-- self, animal_id, animal_type, animal_name, animal_status, reported_date, reported_reason, reported_location, shelter_date, adopt_user_id, report_user_id -->
+        <tr>
+            <th>Animal ID</th>
+            <th>Animal Type</th>
+            <th>Animal Name</th>
+            <th>Animal Status</th>
+            <th>Reported Date</th>
+            <th>Reported Reason</th>
+            <th>Reported Location</th>
+            <th>Shelter Date</th>
+            <th>Adopt User ID</th>
+            <th>Report User ID</th>
+        </tr>
+        {% for animal in org_animals %}
+        <tr>
+            <td>{{ animal.animal_id }}</td>
+            <td>{{ animal.animal_type }}</td>
+            <td>{{ animal.animal_name }}</td>
+            <td>{{ animal.animal_status }}</td>
+            <td>{{ animal.reported_date }}</td>
+            <td>{{ animal.reported_reason }}</td>
+            <td>{{ animal.reported_location }}</td>
+            <td>{{ animal.shelter_date }}</td>
+            <td>{{ animal.adopt_user_id }}</td>
+            <td>{{ animal.report_user_id }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>

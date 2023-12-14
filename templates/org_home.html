@@ -144,6 +144,7 @@
                 <th ms-auto>Founded_Date</th>
                 <th ms-auto>Homepage</th>
                 <th ms-auto>Event Panel</th>
+                <th ms-auto>Animal Panel</th>
                 <th ms-auto>Leave</th>
             </tr>
             {% for org in attending_orgs %}
@@ -155,6 +156,7 @@
                 <td ms-auto>{{ org.org_founded_date }}</td>
                 <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}">Homepage</button></form></td>
                 <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}/event_panel">Event Panel</button></form></td>
+                <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}/animal_panel">Animal Panel</button></form></td>
                 <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}/leave">Leave</button></form></td>
             </tr>
             {% endfor %}

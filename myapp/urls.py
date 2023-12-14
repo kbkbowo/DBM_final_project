@@ -21,7 +21,10 @@ urlpatterns = [
     path('org_home/<str:org_id>/event_panel/', views.org_event_panel, name='org_event_panel'),
     path('org_home/<str:org_id>/event_panel/create_event/', views.org_create_event, name='org_create_event'),
     path('org_home/<str:org_id>/event_panel/<str:event_id>/delete_event/', views.org_delete_event, name='org_delete_event'),
+    path('org_home/<str:org_id>/animal_panel/', views.org_animal_panel, name='org_animal_panel'),
+    path('org_home/<str:org_id>/animal_panel/<str:animal_id>/shelter/', views.org_shelter_animal, name='org_shelter_animal'),
     path('event/', views.event, name='event'),
     path('event_browse/', views.event_browse, name='event_browse'),
-    path('event/<str:event_id>/join', views.event_join, name='event_join'),
+    path('event/<str:event_id>/join/', views.event_join, name='event_join'),
+    path('report_animal/', views.report_animal, name='report_animal'),
 ]

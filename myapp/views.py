@@ -1,5 +1,5 @@
 from django.shortcuts import render, HttpResponse, redirect
-from .forms import LoginForm, SignupForm, QueryUsersForm, ManageUserForm, BuildOrgForm, ManageFounderForm, JoinOrgForm, CreateEventForm, BrowseEventForm
+from .forms import LoginForm, SignupForm, QueryUsersForm, ManageUserForm, BuildOrgForm, ManageFounderForm, JoinOrgForm, CreateEventForm, BrowseEventForm, ReportAnimalForm
 from .db_utils import *
 
 class User:
@@ -45,7 +45,6 @@ class Event:
         ### set attributes
         for k, v in self.dict.items():
             setattr(self, k, v)
-    
 
 # e.Event_ID, e.Event_date, e.Event_name, e.Capacity, (e.Capacity - COUNT(a.User_ID)) As Vacancy, e.Event_location, e.Event_description, e.Start_time, e.End_time, o.Org_ID, o.Org_name
 class BrowsedEvent:
@@ -62,6 +61,25 @@ class BrowsedEvent:
             "end_time": end_time,
             "org_id": org_id,
             "org_name": org_name,
+        }
+        ### set attributes
+        for k, v in self.dict.items():
+            setattr(self, k, v)
+
+# SELECT a.Animal_ID, a.Animal_type, a.Animal_name, a.Animal_status, a.Reported_date, a.Reported_reason, a.Reported_location, a.Shelter_date, a.Adopt_user_ID, a.Report_user_ID
+class Animal:
+    def __init__(self, animal_id, animal_type, animal_name, animal_status, reported_date, reported_reason, reported_location, shelter_date, adopt_user_id, report_user_id):
+        self.dict = {
+            "animal_id": animal_id,
+            "animal_type": animal_type,
+            "animal_name": animal_name,
+            "animal_status": animal_status,
+            "reported_date": reported_date,
+            "reported_reason": reported_reason,
+            "reported_location": reported_location,
+            "shelter_date": shelter_date,
+            "adopt_user_id": adopt_user_id,
+            "report_user_id": report_user_id,
         }
         ### set attributes
         for k, v in self.dict.items():
@@ -445,6 +463,10 @@ def org_event_panel(request, org_id=-1):
         request.session['last_page'] = 'event_panel'
         return redirect('login')
 
+    # check if the user is the member of the org
+    if org_id not in [org.org_id for org in parse_data(Org, get_attending_orgs(request.session['user_data'][0]))]:
+        return redirect('org_home')
+
     ctx_dict = {
         "org_info": Org(*get_org_info(org_id)).dict,
         "org_events": parse_data(Event, get_org_events(org_id)),
@@ -455,6 +477,10 @@ def org_create_event(request, org_id=-1):
     if request.session.get('user_data') is None:
         request.session['last_page'] = 'event_create'
         return redirect('login')
+
+    # check if the user is the member of the org
+    if org_id not in [org.org_id for org in parse_data(Org, get_attending_orgs(request.session['user_data'][0]))]:
+        return redirect('org_home')
 
     if request.method == 'POST':
         form = CreateEventForm(request.POST)
@@ -483,6 +509,42 @@ def org_delete_event(request, org_id, event_id):
         
     event_info = Event(*get_event_info(event_id)).dict
     return render(request, 'org_delete_event.html', {"event_info": event_info})
+
+def org_animal_panel(request, org_id=-1):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'animal_panel'
+        return redirect('login')
+
+    # check if the user is the member of the org
+    if org_id not in [org.org_id for org in parse_data(Org, get_attending_orgs(request.session['user_data'][0]))]:
+        return redirect('org_home')
+
+    ctx_dict = {
+        "org_info": Org(*get_org_info(org_id)).dict,
+        "unsheltered_animals": parse_data(Animal, get_unsheltered_animals()),
+        "org_animals": parse_data(Animal, get_org_animals(org_id)),
+    }
+    return render(request, 'org_animal_panel.html', ctx_dict)
+
+def org_shelter_animal(request, org_id, animal_id):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'animal_shelter'
+        return redirect('login')
+    
+    # check if the user is the member of the org
+    if org_id not in [org.org_id for org in parse_data(Org, get_attending_orgs(request.session['user_data'][0]))]:
+        return redirect('org_home')
+
+    animal_info = Animal(*get_animal_info(animal_id)).dict
+
+    if request.method == 'POST':
+        success = shelter_animal(org_id, animal_id)
+        if success:
+            return render(request, 'org_shelter_animal.html', {'animal_info': animal_info, 'status': 'Successfully sheltered this animal.'})
+        else:
+            return render(request, 'org_shelter_animal.html', {'animal_info': animal_info, 'status': 'Failed to shelter this animal. This animal might have been sheltered by another organization sheltered.'})
+
+    return render(request, 'org_shelter_animal.html', {'animal_info': animal_info})
 
 def event(request):
     if request.session.get('user_data') is None:
@@ -538,3 +600,18 @@ def event_join(request, event_id=-1):
     
     return render(request, 'event_join.html', {"status": status})
 
+def report_animal(request):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'report_animal'
+        return redirect('login')
+
+    if request.method == 'POST' and "Submit" in request.POST:
+            form = ReportAnimalForm(request.POST)
+            if form.is_valid():
+                user_id = request.session['user_data'][0]
+                result = form.execute_action(user_id=user_id)
+                return render(request, 'report_animal.html', {'form': form, 'status': 'Successfully reported.'})
+            else:
+                return render(request, 'report_animal.html', {'form': form, 'status': 'Invalid inputs.'})
+
+    return render(request, 'report_animal.html', {'form': ReportAnimalForm()})
