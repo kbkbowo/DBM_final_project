@@ -449,3 +449,4 @@ class BrowseEventForm(forms.Form):
         result = cur.fetchall()
         self.event_data = result
         return True
+    

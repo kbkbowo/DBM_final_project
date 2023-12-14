@@ -18,6 +18,26 @@
                     <table>
                         {{ form }}
                         <tr>
+                            <td><label for="user_id">User ID:</label></td>
+                            <td>{{ form.user_id }}</td>
+                        </tr>
+                        <tr>
+                            <td><label for="user_name">User Name:</label></td>
+                            <td>{{ form.user_name }}</td>
+                        </tr>
+                        <tr>
+                            <td><label for="user_email">User Email:</label></td>
+                            <td>{{ form.user_email }}</td>
+                        </tr>
+                        <tr>
+                            <td><label for="user_phone">User Phone:</label></td>
+                            <td>{{ form.user_phone }}</td>
+                        </tr>
+                        <tr>
+                            <td><label for="user_level">User Level:</label></td>
+                            <td>{{ form.user_level }}</td>
+                        </tr>
+                        <tr>
                             <td>
                                 <form method="post">
                                     {% csrf_token %}
