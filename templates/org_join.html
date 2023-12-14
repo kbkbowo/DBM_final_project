@@ -1,11 +1,23 @@
-<html>
+{% extends 'base.html' %} 
+{% block title %} Org_join {%endblock %}
+
+
+{% block navPageName %}
+    <a class="navbar-brand" href="#">Join Organization</a>
+{% endblock %}
+
+{%block content %}
+
 <head>
     <title>Join Organization</title>
 </head>
 
-<body>
-    <h1>Join Organization</h1>
+
+    <!-- <h1>Join Organization</h1> -->
+    <div class = "form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto; ">
     {{ status }}
-    <form method="get"><button type="submit" formaction="../../">Go Back</button></form>
-</body>
-</html>
+    <form method="get" style="margin-top: 5px;"><button type="submit" formaction="{%url 'org_browse'%}">Go Back</button></form>
+    </div>
+
+
+{% endblock %}
