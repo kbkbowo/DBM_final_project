@@ -14,11 +14,20 @@
     <title>Organization Home</title>
 </head>
 
+<style>
+    .Founder, .Member {
+        display: none;
+    }
+</style>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script>
-    $(document).ready(function () {
-        $('.Founder, .Member').click(function(){
-            $('.Founder, .Member').toggle
+    
+    $(document).ready(function () { 
+        $('#FounderLink').click(function(){
+            $('.Founder').toggle();
+        })
+        $('#MemberLink').click(function(){
+            $('.Member').toggle();
         })
     });
 </script>
@@ -64,8 +73,8 @@
             <!-- ---------- -->
             <li><hr class="dropdown-divider" color="white"></li>
             
-            <li><button id="Founder">Organizations as Founder</button></li>
-            <li><button id="Member"> Organizations as Member</button></li>
+            <li><a class="dropdown-item" href="#" id="FounderLink">Organizations as Founder</a></li>
+            <li><a class="dropdown-item" href="#" id="MemberLink">Organizations as Member</a></li>
               
             </ul>
           </li>
@@ -96,26 +105,26 @@
         <!-- display {{ owned_orgs }} with a table-->
         <div class="Founder">
         <h2>Organizations as Founder: </h2>
-        <table>
+        <table style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px;">
             <tr>
-                <th>Org_ID</th>
-                <th>Org_Name</th>
-                <th>Address</th>
-                <th>Phone_Num</th>
-                <th>Founded_Date</th>
-                <th>Homepage</th>
-                <th>Edit info</th>
-                <th>Edit founder</th>
-                <th>Delete</th>
+                <th ms-auto>Org_ID</th>
+                <th ms-auto>Org_Name</th>
+                <th ms-auto>Address</th>
+                <th ms-auto>Phone_Num</th>
+                <th ms-auto>Founded_Date</th>
+                <th ms-auto>Homepage</th>
+                <th ms-auto>Edit info</th>
+                <th ms-auto>Edit founder</th>
+                <th ms-auto>Delete</th>
             </tr>
             {% for org in owned_orgs %}
             <tr>
-                <td>{{ org.org_id }}</td>
-                <td>{{ org.org_name }}</td>
-                <td>{{ org.org_address }}</td>
-                <td>{{ org.org_phone }}</td>
-                <td>{{ org.org_founded_date }}</td>
-                <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}">Homepage</button></form></td>
+                <td ms-auto>{{ org.org_id }}</td>
+                <td ms-auto>{{ org.org_name }}</td>
+                <td ms-auto>{{ org.org_address }}</td>
+                <td ms-auto>{{ org.org_phone }}</td>
+                <td ms-auto>{{ org.org_founded_date }}</td>
+                <td ms-auto><form><button type="submit" formaction="../org_home/{{ org.org_id }}">Homepage</button></form></td>
                 <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}/edit_info">Edit info</button></form></td>
                 <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}/edit_founder">Edit Founder</button></form></td>
                 <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}/delete">Delete</button></form></td>
@@ -126,24 +135,24 @@
     
     <div class="Member">
         <h2>Organizations as Member: </h2>
-        <table>
+        <table style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px;">
             <tr>
-                <th>Org_ID</th>
-                <th>Org_Name</th>
-                <th>Address</th>
-                <th>Phone_Num</th>
-                <th>Founded_Date</th>
-                <th>Homepage</th>
-                <th>Event Panel</th>
-                <th>Leave</th>
+                <th ms-auto>Org_ID</th>
+                <th ms-auto>Org_Name</th>
+                <th ms-auto>Address</th>
+                <th ms-auto>Phone_Num</th>
+                <th ms-auto>Founded_Date</th>
+                <th ms-auto>Homepage</th>
+                <th ms-auto>Event Panel</th>
+                <th ms-auto>Leave</th>
             </tr>
             {% for org in attending_orgs %}
             <tr>
-                <td>{{ org.org_id }}</td>
-                <td>{{ org.org_name }}</td>
-                <td>{{ org.org_address }}</td>
-                <td>{{ org.org_phone }}</td>
-                <td>{{ org.org_founded_date }}</td>
+                <td ms-auto>{{ org.org_id }}</td>
+                <td ms-auto>{{ org.org_name }}</td>
+                <td ms-auto>{{ org.org_address }}</td>
+                <td ms-auto>{{ org.org_phone }}</td>
+                <td ms-auto>{{ org.org_founded_date }}</td>
                 <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}">Homepage</button></form></td>
                 <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}/event_panel">Event Panel</button></form></td>
                 <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}/leave">Leave</button></form></td>
@@ -154,33 +163,21 @@
         <!-- Build org -->
     <!-- </body> -->
     
-
+    <!-- <script>
+        $(document).ready(function(){
+          $("a").click(function(){
+            $(".F").toggle(1000);
+            $(".G").toggle(100);
+          });
+        });
+        </script>
+ 
+        <a href="#">Toggle between hide and show for a p element</a>
+        
+        <div class ="F">This is a paragraph.</div>
+        <div class ="G">SSSSS</div> -->
 
 
 {% endblock %}
 
 
-<!-- Build Organization button -->
-<ul class="dropdown">
-    <li class="navbar-nav ">
-        <a class="nav-link" href="{% url 'org_build' %}" style="display: flex; align-items: center;" >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-building-add" viewBox="0 0 16 16">
-                <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0"/>
-                <path d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6.5a.5.5 0 0 1-1 0V1H3v14h3v-2.5a.5.5 0 0 1 .5-.5H8v4H3a1 1 0 0 1-1-1z"/>
-                <path d="M4.5 2a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm3 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm3 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm-6 3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm3 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm3 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm-6 3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm3 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5z"/>
-              </svg>
-            Build Organization
-        </a>
-    </li>
-    
-    <!-- Browse/Join Organization button -->
-    <li class="navbar-nav ">
-        <a class="nav-link" href="{% url 'org_build' %}" style="display: flex; align-items: center;" >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-building" viewBox="0 0 16 16">
-                <path d="M4 2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zM4 5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM7.5 5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM4.5 8a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5z"/>
-                <path d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1zm11 0H3v14h3v-2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V15h3z"/>
-              </svg>
-            Browse/Join Organization
-        </a>
-    </li>
-</ul>
