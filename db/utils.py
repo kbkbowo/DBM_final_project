@@ -120,7 +120,7 @@ def create_tables(conn, cur):
         Animal_ID VARCHAR(20) PRIMARY KEY,
         Animal_type VARCHAR(20) NOT NULL,
         Animal_name VARCHAR(20) NOT NULL,
-        Animal_status VARCHAR(10) NOT NULL CHECK (Animal_status IN ('Adopted', 'Sheltered', 'Released')),
+        Animal_status VARCHAR(10) NOT NULL CHECK (Animal_status IN ('Reported', 'Adopted', 'Sheltered', 'Released')),
         Reported_date DATE NOT NULL,
         Reported_reason VARCHAR(200) NOT NULL,
         Reported_location VARCHAR(100) NOT NULL,
