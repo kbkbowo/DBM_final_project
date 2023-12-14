@@ -1,5 +1,6 @@
 from django import forms
 from .db_utils import get_db
+import pandas.io.sql as sqlio
 import time
 import json
 
@@ -480,9 +481,29 @@ class ReportAnimalForm(forms.Form):
         # Insert the animal
         sql = f"""
         INSERT INTO ANIMAL (Animal_ID, Animal_type, Animal_name, Animal_status, Reported_date, Reported_reason, Reported_location, Report_user_id)
-        VALUES ('{next_id}', '{animal_type}', '{animal_name}', 'Sheltered', '{reported_date}', '{reported_reason}', '{reported_loacation}', '{user_id}');
+        VALUES ('{next_id}', '{animal_type}', '{animal_name}', 'Reported', '{reported_date}', '{reported_reason}', '{reported_loacation}', '{user_id}');
         """
         cur.execute(sql)
         print(f"successfully created animal {animal_name}")
         conn.commit()
         return True
+
+class OrgVisitForm(forms.Form):
+    visit_date = forms.DateField()
+
+    def execute_action(self, user_id, org_id):
+        conn, cur = get_db()
+        try: 
+            visit_date = self.cleaned_data['visit_date']
+            # Insert the visit
+            sql = f"""
+            INSERT INTO VISIT (Org_ID, User_ID, Visit_date, Status)
+            VALUES ('{org_id}', '{user_id}', '{visit_date}', 'Pending');
+            """
+            cur.execute(sql)
+            conn.commit()
+            return True
+        except Exception as e:
+            print(e)
+            conn.rollback()
+            return False

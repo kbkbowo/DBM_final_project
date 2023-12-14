@@ -127,7 +127,7 @@ def create_tables(conn, cur):
         Shelter_date DATE,
         Adopt_User_ID VARCHAR(20),
         Report_User_ID VARCHAR(20),
-        Org_ID VARCHAR(20) NOT NULL,
+        Org_ID VARCHAR(20),
         FOREIGN KEY (Adopt_User_ID) REFERENCES USER_(User_ID) ON DELETE CASCADE ON UPDATE CASCADE,
         FOREIGN KEY (Report_User_ID) REFERENCES USER_(User_ID) ON DELETE CASCADE ON UPDATE CASCADE,
         FOREIGN KEY (Org_ID) REFERENCES ORGANIZATION(Org_ID) ON DELETE CASCADE ON UPDATE CASCADE
@@ -152,6 +152,18 @@ def create_tables(conn, cur):
         PRIMARY KEY (Animal_ID, Hospital_ID, Sent_date),
         FOREIGN KEY (Animal_ID) REFERENCES ANIMAL(Animal_ID) ON DELETE CASCADE ON UPDATE CASCADE,
         FOREIGN KEY (Hospital_ID) REFERENCES HOSPITAL(Hospital_ID) ON DELETE CASCADE ON UPDATE CASCADE,
+        FOREIGN KEY (Org_ID) REFERENCES ORGANIZATION(Org_ID) ON DELETE CASCADE ON UPDATE CASCADE
+    );""",
+    
+    """
+    CREATE TABLE VISIT (
+        Visit_ID SERIAL PRIMARY KEY,
+        User_ID VARCHAR(20),
+        Org_ID VARCHAR(20),
+        Visit_date DATE,
+        STATUS VARCHAR(10) NOT NULL CHECK (STATUS IN ('Pending', 'Approved', 'Rejected')),
+        PRIMARY KEY (User_ID, Org_ID, Visit_date),
+        FOREIGN KEY (User_ID) REFERENCES USER_(User_ID) ON DELETE CASCADE ON UPDATE CASCADE,
         FOREIGN KEY (Org_ID) REFERENCES ORGANIZATION(Org_ID) ON DELETE CASCADE ON UPDATE CASCADE
     );"""]
 
@@ -186,6 +198,21 @@ def drop_nonnull(table, col):
     conn.commit()
 
 if __name__ == "__main__":
-    table = "ANIMAL"
-    col = "Org_ID"
-    drop_nonnull(table, col)
+    conn, cur = get_db()
+    # get the meta table of animal and print the constraint naem
+    # drop constraint "animal_animal_status_check"
+    sql = """
+    DROP TABLE VISIT;
+
+    CREATE TABLE VISIT (
+        Visit_ID SERIAL PRIMARY KEY,
+        User_ID VARCHAR(20),
+        Org_ID VARCHAR(20),
+        Visit_date DATE,
+        STATUS VARCHAR(10) NOT NULL CHECK (STATUS IN ('Pending', 'Approved', 'Rejected')),
+        FOREIGN KEY (User_ID) REFERENCES USER_(User_ID) ON DELETE CASCADE ON UPDATE CASCADE,
+        FOREIGN KEY (Org_ID) REFERENCES ORGANIZATION(Org_ID) ON DELETE CASCADE ON UPDATE CASCADE
+    );
+    """
+    cur.execute(sql)
+    conn.commit()

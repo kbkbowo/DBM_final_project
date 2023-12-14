@@ -1,5 +1,5 @@
 from django.shortcuts import render, HttpResponse, redirect
-from .forms import LoginForm, SignupForm, QueryUsersForm, ManageUserForm, BuildOrgForm, ManageFounderForm, JoinOrgForm, CreateEventForm, BrowseEventForm, ReportAnimalForm
+from .forms import LoginForm, SignupForm, QueryUsersForm, ManageUserForm, BuildOrgForm, ManageFounderForm, JoinOrgForm, CreateEventForm, BrowseEventForm, ReportAnimalForm, OrgVisitForm
 from .db_utils import *
 
 class User:
@@ -118,7 +118,9 @@ def home(request):
             request.session['last_page'] = 'home'
             return redirect('manage_users')
         
-    return render(request, 'home.html', {'user_id':request.session['user_data'][0], 'user_name': request.session['user_data'][1], 'user_level': request.session['user_data'][4]})
+    user_schedules = get_user_schedules(request.session['user_data'][0])
+        
+    return render(request, 'home.html', {'user_id':request.session['user_data'][0], 'user_name': request.session['user_data'][1], 'user_level': request.session['user_data'][4], 'visits': user_schedules})
 
 def logout(request):
     request.session.flush()
@@ -434,7 +436,7 @@ def org_browse(request):
         
     attending_orgs = parse_data(Org, get_attending_orgs(request.session['user_data'][0]))
     ctx_dict = {
-        "form": QueryUsersForm(),
+        "form": JoinOrgForm(),
         "attending_orgs": attending_orgs,
     }
     return render(request, 'org_browse.html', ctx_dict)
@@ -546,6 +548,59 @@ def org_shelter_animal(request, org_id, animal_id):
 
     return render(request, 'org_shelter_animal.html', {'animal_info': animal_info})
 
+def org_visit_panel(request, org_id=-1):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'visit_panel'
+        return redirect('login')
+
+    # check if the user is the member of the org
+    if org_id not in [org.org_id for org in parse_data(Org, get_attending_orgs(request.session['user_data'][0]))]:
+        return redirect('org_home')
+
+    pending_visits = get_org_pending_visits(org_id)
+    approved_visits = get_org_approved_visits(org_id)
+    rejected_visits = get_org_rejected_visits(org_id)
+
+    print(len(pending_visits), len(approved_visits), len(rejected_visits))
+
+    ctx_dict = {
+        "org_info": Org(*get_org_info(org_id)).dict,
+        "pending_visits": pending_visits,
+        "approved_visits": approved_visits,
+        "rejected_visits": rejected_visits,
+    }
+    return render(request, 'org_visit_panel.html', ctx_dict)
+
+def org_visit_approve(request, org_id, visit_id):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'visit_approve'
+        return redirect('login')
+    
+    # check if the user is the member of the org
+    if org_id not in [org.org_id for org in parse_data(Org, get_attending_orgs(request.session['user_data'][0]))]:
+        return redirect('org_home')
+
+    if request.method == 'POST':
+        set_visit_state(visit_id, 'Approved')
+        return redirect('org_visit_panel', org_id=org_id)
+    
+    return HttpResponse("Invalid request.")
+
+def org_visit_reject(request, org_id, visit_id):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'visit_reject'
+        return redirect('login')
+    
+    # check if the user is the member of the org
+    if org_id not in [org.org_id for org in parse_data(Org, get_attending_orgs(request.session['user_data'][0]))]:
+        return redirect('org_home')
+
+    if request.method == 'POST':
+        set_visit_state(visit_id, 'Rejected')
+        return redirect('org_visit_panel', org_id=org_id)
+    
+    return HttpResponse("Invalid request.")
+
 def event(request):
     if request.session.get('user_data') is None:
         request.session['last_page'] = 'events'
@@ -610,8 +665,35 @@ def report_animal(request):
             if form.is_valid():
                 user_id = request.session['user_data'][0]
                 result = form.execute_action(user_id=user_id)
-                return render(request, 'report_animal.html', {'form': form, 'status': 'Successfully reported.'})
+                return render(request, 'animal_report.html', {'form': form, 'status': 'Successfully reported.'})
             else:
-                return render(request, 'report_animal.html', {'form': form, 'status': 'Invalid inputs.'})
+                return render(request, 'animal_report.html', {'form': form, 'status': 'Invalid inputs.'})
 
-    return render(request, 'report_animal.html', {'form': ReportAnimalForm()})
+    return render(request, 'animal_report.html', {'form': ReportAnimalForm()})
+
+def adopt_animal(request):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'adopt_animal'
+        return redirect('login')
+
+    orgs = parse_data(Org, get_orgs())
+
+    if request.method == 'POST':
+        if "Search" in request.POST:
+            selected_org_id = request.POST.get('org')
+            request.session['selected_org_id'] = selected_org_id
+            animals = parse_data(Animal, get_org_sheltered_animals(selected_org_id))
+            form = OrgVisitForm(request.POST)
+            return render(request, 'animal_adopt.html', {'animals': animals, 'orgs': orgs, 'selected_org_id': selected_org_id, 'form': form})
+        elif "Apply" in request.POST:
+            form = OrgVisitForm(request.POST)
+            if form.is_valid():
+                selected_org_id = request.session['selected_org_id']
+                animals = parse_data(Animal, get_org_sheltered_animals(selected_org_id))
+                user_id = request.session['user_data'][0]
+                success = form.execute_action(user_id, selected_org_id)
+                status = "Successfully applied for visit!" if success else "Failed to apply for visit. Have you entered a valid date?"
+                return render(request, 'animal_adopt.html', {'status': status, 'animals': animals, 'orgs': orgs, 'selected_org_id': selected_org_id, 'form': form})
+
+    return render(request, 'animal_adopt.html', {'orgs': orgs})
+

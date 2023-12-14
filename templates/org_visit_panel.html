@@ -1,0 +1,76 @@
+
+<head>
+    <title>Visit Panel</title>
+</head>
+
+<body>
+    <h1>Visit Panel</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" formaction="../../">Back</button>
+    </form>
+
+    <h2>Pending Visit Requests</h2>
+    {% if pending_visits|length == 0 %}
+    <p>No pending visit requests currently!</p>
+    {% else %}
+    <p>These users have applied for a visit to your organization.</p>
+    <table>
+        <!-- self, visit_id, org_id, user_id, visit_date, status, org_name -->
+        <tr>
+            <th>User Name</th>
+            <th>User Email</th>
+            <th>User Phone</th>
+            <th>Visit Date</th>
+            <th>Accept</th>
+            <th>Reject</th>
+        </tr>
+        {% for visit in pending_visits %}
+        <tr>
+            <td>{{ visit.user_name }}</td>
+            <td>{{ visit.user_email }}</td>
+            <td>{{ visit.user_phone_number }}</td>
+            <td>{{ visit.visit_date }}</td>
+            <td>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" formaction="{{ visit.visit_id }}/approve/">Accept</button>
+                </form>
+            </td>
+            <td>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" formaction="{{ visit.visit_id }}/reject/">Reject</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    <h2>Visiting Schedules</h2>
+    {% if approved_visits|length == 0 %}
+    <p>You have no upcoming schedules.</p>
+    {% else %}
+    <table>
+        <tr>
+            <th> User Name </th>
+            <th> User Email </th>
+            <th> User Phone </th>
+            <th> Visit Date </th>
+            <th> Status </th>
+        </tr>
+        {% for visit in approved_visits %}
+        <tr>
+            <td> {{ visit.user_name }}&emsp; </td>
+            <td>{{ visit.user_email }}</td>
+            <td>{{ visit.user_phone_number }}</td>
+            <td> {{ visit.visit_date }}&emsp; </td>
+            <td> {{ visit.status }}&emsp; </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+</body>
+

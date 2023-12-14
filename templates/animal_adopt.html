@@ -1,0 +1,60 @@
+{% extends 'baseHome.html' %} 
+{% block title %} Home {%endblock %}
+
+{%block content %}
+
+<head>
+    <title>Adopt Animal</title>
+</head>
+
+<body>
+    <h1>Adopt Animal</h1>
+    <form method="post">
+        {% csrf_token %}
+        <p>Please select the organization to view the animals they are currently sheltering.</p>
+        <select name="org">
+            <option value="">Please Select Organization</option>
+            {% for org in orgs %}
+            <option value="{{ org.org_id }}" 
+                {% if org.org_id == selected_org_id %} selected='selected' {% endif %}>
+                {{ org.org_name }}
+            </option>
+            {% endfor %}
+        </select>
+        <button type="submit" name="Search">Search</button>
+    </form>
+    {% if form %}
+    <form method="post">
+        {% csrf_token %}
+        <p>You can apply for a visit to the selected organization.</p>
+        <form method="post">
+            {% csrf_token %}
+            {{ status }}
+            {{ form }}
+            <button type="submit" name="Apply">Apply</button>
+    </form>
+    {% endif %}
+
+    <h2>Search Results</h2>
+    <table>
+        <tr>
+            <th>Animal Type</th>
+            <th>Animal ID</th>
+            <th>Animal Name</th>
+            <th>Reported Date</th>
+            <th>Reported Location</th>
+        </tr>
+        {% for animal in animals %}
+        <tr>
+            <td>{{ animal.animal_type }}</td>
+            <td>{{ animal.animal_id }}</td>
+            <td>{{ animal.animal_name }}</td>
+            <td>{{ animal.reported_date }}</td>
+            <td>{{ animal.reported_location }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</body>
+    
+    {% endblock %}

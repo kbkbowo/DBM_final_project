@@ -66,6 +66,7 @@
     </form>
     </div>
     <br><br>
+    {% if orgs|length > 0 %}
     <div class="form-container" style= "width: fit-content; margin: 0 auto; ">
     <h2>Search Results:</h2>
     <table>
@@ -90,5 +91,6 @@
         </tr>
         {% endfor %}
     </table>
+    {% endif %}
 </div>
 {% endblock %}

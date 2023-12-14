@@ -39,8 +39,33 @@
             </form>
             <form method="post">
                 {% csrf_token %}
-                <button type="submit" formaction="report_animal/">Report Animals</button>
+                <button type="submit" formaction="report_animal/">Report Animal</button>
             </form>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" formaction="adopt_animal/">Adopt Animal</button>
+            </form>
+            <br>
+            <h3>My schedule</h3>
+            {% if visits|length == 0 %}
+            <p>You have no upcoming schedules.</p>
+            {% else %}
+            <table>
+                <tr>
+                    <th> Organization Name </th>
+                    <th> Visit Date </th>
+                    <th> Status </th>
+                </tr>
+                {% for visit in visits %}
+                <tr>
+                    <td> {{ visit.org_name }}&emsp; </td>
+                    <td> {{ visit.visit_date }}&emsp; </td>
+                    <td> {{ visit.status }}&emsp; </td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
+            
         </div>
         <div class="box2" style="width: 400px; float: right;background-color: rgb(234, 153, 129);">
             {% if user_level == "Admin" %}

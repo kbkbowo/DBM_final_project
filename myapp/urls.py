@@ -23,8 +23,13 @@ urlpatterns = [
     path('org_home/<str:org_id>/event_panel/<str:event_id>/delete_event/', views.org_delete_event, name='org_delete_event'),
     path('org_home/<str:org_id>/animal_panel/', views.org_animal_panel, name='org_animal_panel'),
     path('org_home/<str:org_id>/animal_panel/<str:animal_id>/shelter/', views.org_shelter_animal, name='org_shelter_animal'),
+    path('org_home/<str:org_id>/visit_panel/', views.org_visit_panel, name='org_visit_panel'),
+    path('org_home/<str:org_id>/visit_panel/<int:visit_id>/approve/', views.org_visit_approve, name='org_visit_approve'),
+    path('org_home/<str:org_id>/visit_panel/<int:visit_id>/reject/', views.org_visit_reject, name='org_visit_reject'),
     path('event/', views.event, name='event'),
     path('event_browse/', views.event_browse, name='event_browse'),
     path('event/<str:event_id>/join/', views.event_join, name='event_join'),
     path('report_animal/', views.report_animal, name='report_animal'),
+    path('adopt_animal/', views.adopt_animal, name='adopt_animal'),
+    path('adopt_animal/<str:animal_id>', views.adopt_animal, name='adopt_animal'),
 ]
