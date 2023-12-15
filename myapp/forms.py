@@ -1,8 +1,9 @@
 from django import forms
-from .db_utils import get_db
+from .db_utils import get_db, full_transaction
 import pandas.io.sql as sqlio
 import time
 import json
+import dateutil.parser as date_parser
 
 class LoginForm(forms.Form):
     username = forms.CharField()
@@ -31,78 +32,68 @@ class SignupForm(forms.Form):
     phone = forms.CharField()
     email = forms.CharField()
 
+    @full_transaction
     def execute_action(self):
-        conn, cur = get_db()
+        _, cur = get_db()
         username = self.cleaned_data['username']
         phone = self.cleaned_data['phone']
         email = self.cleaned_data['email']
-        try: 
-            sql = f"""
-            SELECT *
-            FROM USER_ AS u
-            WHERE u.User_email = '{email}';
-            """
-            # check if exists
-            cur.execute(sql)
-            result = cur.fetchall()
 
-            assert len(result) == 0 # if exists, raise error
+        sql = f"""
+        SELECT *
+        FROM USER_ AS u
+        WHERE u.User_email = '{email}';
+        """
+        # check if exists
+        cur.execute(sql)
+        result = cur.fetchall()
 
-            sql = """
-            SELECT User_ID
-            FROM USER_
-            ORDER BY User_ID::int DESC
-            LIMIT 1;
-            """
-            cur.execute(sql)
-            result = cur.fetchall()
-            next_id = int(result[0][0]) + 1
-            # Insert the user
-            sql = f"""
-            INSERT INTO USER_ (User_ID, User_name, User_phone_number, User_email, User_level)
-            VALUES ('{next_id}', '{username}', '{phone}', '{email}', 'User');
-            """
-            cur.execute(sql)
-            conn.commit()
-            self.user_data = [next_id, username, phone, email, 'User']
-            return True
-        except Exception as e:
-            print(e)
-            conn.rollback()
-            return False
+        assert len(result) == 0 # if exists, raise error
 
+        sql = """
+        SELECT User_ID
+        FROM USER_
+        ORDER BY User_ID::int DESC
+        LIMIT 1;
+        """
+        cur.execute(sql)
+        result = cur.fetchall()
+        next_id = int(result[0][0]) + 1
+        # Insert the user
+        sql = f"""
+        INSERT INTO USER_ (User_ID, User_name, User_phone_number, User_email, User_level)
+        VALUES ('{next_id}', '{username}', '{phone}', '{email}', 'User');
+        """
+        cur.execute(sql)
+        self.user_data = [next_id, username, phone, email, 'User']
+        return True
+
+    @full_transaction
     def update_user_data(self, user_id):
-        conn, cur = get_db()
+        _, cur = get_db()
         username = self.cleaned_data['username']
         phone = self.cleaned_data['phone']
         email = self.cleaned_data['email']
-        try:
-            sql = f"""
-            SELECT *
-            FROM USER_ AS u
-            WHERE u.User_email = '{email}'
-                AND u.User_ID != '{user_id}';
-            """
-            # check if exists
-            cur.execute(sql)
-            result = cur.fetchall()
+        sql = f"""
+        SELECT *
+        FROM USER_ AS u
+        WHERE u.User_email = '{email}'
+            AND u.User_ID != '{user_id}';
+        """
+        # check if exists
+        cur.execute(sql)
+        result = cur.fetchall()
 
-            assert len(result) == 0 # if exists, raise error
+        assert len(result) == 0 # if exists, raise error
 
-            sql = f"""
-            UPDATE USER_
-            SET User_name = '{username}', User_phone_number = '{phone}', User_email = '{email}'
-            WHERE User_ID = '{user_id}';
-            """
-            cur.execute(sql)
-            conn.commit()
-            self.user_data = [user_id, username, phone, email]
-
-            return True
-        except Exception as e:
-            print(e)
-            conn.rollback()
-            return False
+        sql = f"""
+        UPDATE USER_
+        SET User_name = '{username}', User_phone_number = '{phone}', User_email = '{email}'
+        WHERE User_ID = '{user_id}';
+        """
+        cur.execute(sql)
+        self.user_data = [user_id, username, phone, email]
+        return True
         
 class QueryUsersForm(forms.Form):
     user_id = forms.CharField(required=False)
@@ -113,7 +104,7 @@ class QueryUsersForm(forms.Form):
     level = forms.ChoiceField(choices=[('', 'Any'), ('User', 'User'), ('Admin', 'Admin')], required=False)
 
     def execute_action(self):
-        conn, cur = get_db()
+        _, cur = get_db()
         user_id = self.cleaned_data['user_id']
         user_name = self.cleaned_data['user_name']
         phone = self.cleaned_data['phone']
@@ -137,50 +128,42 @@ class QueryUsersForm(forms.Form):
 class ManageUserForm(forms.Form):
     action_choices = forms.ChoiceField(choices=[('promote', 'Promote (Make Admin)'), ('demote', 'Demote (Make User)'), ('delete', 'Delete Account')], required=False)
 
+    @full_transaction
     def execute_action(self, user_id):
-        conn, cur = get_db()
+        _, cur = get_db()
         action = self.cleaned_data['action_choices']
-        print(action)
-
-        try:
-            if action == 'promote':
-                sql = f"""
-                UPDATE USER_
-                SET User_level = 'Admin'
-                WHERE User_ID = '{user_id}';
-                """
-                cur.execute(sql)
-                conn.commit()
-                return True
-            elif action == 'demote':
-                sql = f"""
-                UPDATE USER_
-                SET User_level = 'User'
-                WHERE User_ID = '{user_id}';
-                """
-                cur.execute(sql)
-                conn.commit()
-                return True
-            elif action == 'delete':
-                sql = f"""
-                DELETE FROM USER_
-                WHERE User_ID = '{user_id}';
-                """
-                cur.execute(sql)
-                conn.commit()
-                return True
-        except Exception as e:
-            print(e)
-            conn.rollback()
-            return False
+        if action == 'promote':
+            sql = f"""
+            UPDATE USER_
+            SET User_level = 'Admin'
+            WHERE User_ID = '{user_id}';
+            """
+            cur.execute(sql)
+            return True
+        elif action == 'demote':
+            sql = f"""
+            UPDATE USER_
+            SET User_level = 'User'
+            WHERE User_ID = '{user_id}';
+            """
+            cur.execute(sql)
+            return True
+        elif action == 'delete':
+            sql = f"""
+            DELETE FROM USER_
+            WHERE User_ID = '{user_id}';
+            """
+            cur.execute(sql)
+            return True
 
 class BuildOrgForm(forms.Form):
     org_name = forms.CharField(required=True)
     org_address = forms.CharField(required=True)
     org_phone = forms.CharField(required=True)
 
+    @full_transaction
     def execute_action(self, user_id):
-        conn, cur = get_db()
+        _, cur = get_db()
         org_name = self.cleaned_data['org_name']
         org_address = self.cleaned_data['org_address']
         org_phone = self.cleaned_data['org_phone']
@@ -211,7 +194,6 @@ class BuildOrgForm(forms.Form):
         
         cur.execute(sql)
         print(f"successfully created org {org_name}")
-        conn.commit()
         return True
 
     def update_org_data(self, org_id):
@@ -262,32 +244,26 @@ class ManageFounderForm(forms.Form):
             self.selected_user = result[0]
         return True
     
+    @full_transaction
     def execute_action(self, org_id):
-        conn, cur = get_db()
+        _, cur = get_db()
         action = self.cleaned_data['action']
         assert action != ''
         user_id = self.selected_user[0]
-        try:
-            if action == 'add':
-                sql = f"""
-                INSERT INTO BUILD (Org_ID, Founder_ID)
-                VALUES ('{org_id}', '{user_id}');
-                """
-                cur.execute(sql)
-                conn.commit()
-                return True
-            elif action == 'remove':
-                sql = f"""
-                DELETE FROM BUILD
-                WHERE Org_ID = '{org_id}' AND Founder_ID = '{user_id}';
-                """
-                cur.execute(sql)
-                conn.commit()
-                return True
-        except Exception as e:
-            print(e)
-            conn.rollback()
-            return False
+        if action == 'add':
+            sql = f"""
+            INSERT INTO BUILD (Org_ID, Founder_ID)
+            VALUES ('{org_id}', '{user_id}');
+            """
+            cur.execute(sql)
+            return True
+        elif action == 'remove':
+            sql = f"""
+            DELETE FROM BUILD
+            WHERE Org_ID = '{org_id}' AND Founder_ID = '{user_id}';
+            """
+            cur.execute(sql)
+            return True
  
 class JoinOrgForm(forms.Form):
     # first ask the user to search for the org and then join
@@ -348,8 +324,9 @@ class CreateEventForm(forms.Form):
     start_time = forms.TimeField(required=True)
     end_time = forms.TimeField(required=True)
     
+    @full_transaction
     def execute_action(self, org_id):
-        conn, cur = get_db()
+        _, cur = get_db()
         event_date = self.cleaned_data['event_date']
         event_name = self.cleaned_data['event_name']
         capacity = self.cleaned_data['capacity']
@@ -377,9 +354,6 @@ class CreateEventForm(forms.Form):
         """
         cur.execute(sql)
         print(f"successfully created event {event_name}")
-        print(next_id)
-        print(org_id)
-        conn.commit()
         return True
 
 class BrowseEventForm(forms.Form):
@@ -460,8 +434,9 @@ class ReportAnimalForm(forms.Form):
     reported_reason = forms.CharField()
     reported_loacation = forms.CharField()
 
+    @full_transaction
     def execute_action(self, user_id):
-        conn, cur = get_db()
+        _, cur = get_db()
         animal_type = self.cleaned_data['animal_type']
         animal_name = self.cleaned_data['animal_name']
         reported_reason = self.cleaned_data['reported_reason']
@@ -485,28 +460,22 @@ class ReportAnimalForm(forms.Form):
         """
         cur.execute(sql)
         print(f"successfully created animal {animal_name}")
-        conn.commit()
         return True
 
 class OrgVisitForm(forms.Form):
     visit_date = forms.DateField()
 
+    @full_transaction
     def execute_action(self, user_id, org_id):
-        conn, cur = get_db()
-        try: 
-            visit_date = self.cleaned_data['visit_date']
-            # Insert the visit
-            sql = f"""
-            INSERT INTO VISIT (Org_ID, User_ID, Visit_date, Status)
-            VALUES ('{org_id}', '{user_id}', '{visit_date}', 'Pending');
-            """
-            cur.execute(sql)
-            conn.commit()
-            return True
-        except Exception as e:
-            print(e)
-            conn.rollback()
-            return False
+        _, cur = get_db()
+        visit_date = self.cleaned_data['visit_date']
+        # Insert the visit
+        sql = f"""
+        INSERT INTO VISIT (Org_ID, User_ID, Visit_date, Status)
+        VALUES ('{org_id}', '{user_id}', '{visit_date}', 'Pending');
+        """
+        cur.execute(sql)
+        return True
 
 class SelectHospitalForm(forms.Form):
     hospital_id = forms.CharField(required=False)
@@ -538,23 +507,18 @@ class AddDonationForm(forms.Form):
     item_name = forms.CharField(required=False)
     amount = forms.IntegerField(required=True)
 
+    @full_transaction
     def execute_action(self, org_id):
-        conn, cur = get_db()
-        try: 
-            donor_display_name = f"'{self.cleaned_data['donor_display_name']}'" if self.cleaned_data['donor_display_name'] else "NULL"
-            donor_id = f"'{self.cleaned_data['donor_id']}'" if self.cleaned_data['donor_id'] else "NULL"
-            item_name = self.cleaned_data['item_name']
-            amount = self.cleaned_data['amount']
-            # Insert the donation
-            sql = f"""
-            INSERT INTO DONATE (Donor_ID, Donor_display_name, Org_ID, Donate_date, D_Item_name, Donate_amount)
-            VALUES ({donor_id}, {donor_display_name}, '{org_id}', CURRENT_DATE, '{item_name}', '{amount}');
-            """
-            cur.execute(sql)
-            conn.commit()
-            return True
-        except Exception as e:
-            print(e)
-            conn.rollback()
-            return False
+        _, cur = get_db()
+        donor_display_name = f"'{self.cleaned_data['donor_display_name']}'" if self.cleaned_data['donor_display_name'] else "NULL"
+        donor_id = f"'{self.cleaned_data['donor_id']}'" if self.cleaned_data['donor_id'] else "NULL"
+        item_name = self.cleaned_data['item_name']
+        amount = self.cleaned_data['amount']
+        # Insert the donation
+        sql = f"""
+        INSERT INTO DONATE (Donor_ID, Donor_display_name, Org_ID, Donate_date, D_Item_name, Donate_amount)
+        VALUES ({donor_id}, {donor_display_name}, '{org_id}', CURRENT_DATE, '{item_name}', '{amount}');
+        """
+        cur.execute(sql)
+        return True
         

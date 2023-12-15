@@ -29,6 +29,7 @@ urlpatterns = [
     path('org_home/<str:org_id>/visit_panel/', views.org_visit_panel, name='org_visit_panel'),
     path('org_home/<str:org_id>/visit_panel/<int:visit_id>/approve/', views.org_visit_approve, name='org_visit_approve'),
     path('org_home/<str:org_id>/visit_panel/<int:visit_id>/reject/', views.org_visit_reject, name='org_visit_reject'),
+    path('org_home/<str:org_id>/donation_panel/', views.org_donation_panel, name='org_donation_panel'),
     path('event/', views.event, name='event'),
     path('event_browse/', views.event_browse, name='event_browse'),
     path('event/<str:event_id>/join/', views.event_join, name='event_join'),

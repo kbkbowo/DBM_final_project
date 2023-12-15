@@ -3,3 +3,4 @@ django
 psycopg2
 PyYAML
 django-widget-tweaks
+python-dateutil

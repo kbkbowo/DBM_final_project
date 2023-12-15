@@ -5,6 +5,7 @@ import pandas.io.sql as sqlio
 import json
 import time
 from datetime import datetime
+import dateutil.parser as date_parser
 
 config = "configs/db_aws.yaml"
 
@@ -21,8 +22,23 @@ def get_db(config=config):
         cur = conn.cursor()
         return conn, cur
 
+# full transaction wrapper
+def full_transaction(func):
+    def wrapper(*args, **kwargs):
+        conn, cur = get_db()
+        try:
+            result = func(*args, **kwargs)
+            conn.commit()
+            return result
+        except Exception as e:
+            conn.rollback()
+            print(e)
+            return False
+    return wrapper
+
+
 def get_owned_orgs(data):
-    conn, cur = get_db()
+    _, cur = get_db()
     user_id = data['user_id']
     sql = f"""
     SELECT o.Org_ID, o.Org_name, o.Org_address, o.Org_phone_number, o.Org_founded_date
@@ -35,7 +51,7 @@ def get_owned_orgs(data):
     return result
 
 def validate_org_owner(data):
-    conn, cur = get_db()
+    _, cur = get_db()
     user_id = data['user_id']
     org_id = data['org_id']
     sql = f"""
@@ -48,7 +64,7 @@ def validate_org_owner(data):
     return result[0] == 1
 
 def get_org_info(org_id):
-    conn, cur = get_db()
+    _, cur = get_db()
     sql = f"""
     SELECT o.Org_ID, o.Org_name, o.Org_address, o.Org_phone_number, o.Org_founded_date
     FROM ORGANIZATION AS o
@@ -59,7 +75,7 @@ def get_org_info(org_id):
     return result
 
 def get_org_founders(org_id):
-    conn, cur = get_db()
+    _, cur = get_db()
     sql = f"""
     SELECT u.User_ID, u.User_name, u.User_email, u.User_phone_number, u.User_level
     FROM USER_ AS u
@@ -71,7 +87,7 @@ def get_org_founders(org_id):
     return result
 
 def get_orgs():
-    conn, cur = get_db()
+    _, cur = get_db()
     sql = f"""
     SELECT o.Org_ID, o.Org_name, o.Org_address, o.Org_phone_number, o.Org_founded_date
     FROM ORGANIZATION AS o;
@@ -80,18 +96,18 @@ def get_orgs():
     result = cur.fetchall()
     return result
 
+@full_transaction
 def delete_org(org_id):
-    conn, cur = get_db()
+    _, cur = get_db()
     sql = f"""
     DELETE FROM ORGANIZATION
     WHERE Org_ID = '{org_id}';
     """
     cur.execute(sql)
-    conn.commit()
     return True
 
 def get_attending_orgs(user_id):
-    conn, cur = get_db()
+    _, cur = get_db()
     sql = f"""
     SELECT o.Org_ID, o.Org_name, o.Org_address, o.Org_phone_number, o.Org_founded_date
     FROM ORGANIZATION AS o
@@ -103,29 +119,29 @@ def get_attending_orgs(user_id):
     result = cur.fetchall()
     return result
 
+@full_transaction
 def leave_org(user_id, org_id):
-    conn, cur = get_db()
+    _, cur = get_db()
     sql = f"""
     UPDATE JOIN_
     SET Quit_date = CURRENT_DATE
     WHERE Org_ID = '{org_id}' AND User_ID = '{user_id}';
     """
     cur.execute(sql)
-    conn.commit()
     return True
 
+@full_transaction
 def join_org(user_id, org_id):
-    conn, cur = get_db()
+    _, cur = get_db()
     sql = f"""
     INSERT INTO JOIN_
     VALUES ('{user_id}', '{org_id}', CURRENT_DATE, NULL);
     """
     cur.execute(sql)
-    conn.commit()
     return True
 
 def get_org_events(org_id):
-    conn, cur = get_db()
+    _, cur = get_db()
     sql = f"""
     SELECT e.Event_ID, e.Event_date, e.Event_name, e.Capacity, e.Event_location, e.Event_description, e.Start_time, e.End_time, COUNT(a.User_ID) AS Attendees
     FROM EVENT AS e
@@ -141,7 +157,7 @@ def get_org_events(org_id):
     return result
 
 def get_event_info(event_id):
-    conn, cur = get_db()
+    _, cur = get_db()
     sql = f"""
     SELECT e.Event_ID, e.Event_date, e.Event_name, e.Capacity, e.Event_location, e.Event_description, e.Start_time, e.End_time
     FROM EVENT AS e
@@ -151,18 +167,18 @@ def get_event_info(event_id):
     result = cur.fetchone()
     return result
 
+@full_transaction
 def delete_event(event_id):
-    conn, cur = get_db()
+    _, cur = get_db()
     sql = f"""
     DELETE FROM EVENT
     WHERE Event_ID = '{event_id}';
     """
     cur.execute(sql)
-    conn.commit()
     return True
 
 def get_user_events(user_id):
-    conn, cur = get_db()
+    _, cur = get_db()
     sql = f"""
     SELECT e.Event_ID, e.Event_date, e.Event_name, e.Capacity, e.Event_location, e.Event_description, e.Start_time, e.End_time
     FROM EVENT AS e
@@ -174,9 +190,10 @@ def get_user_events(user_id):
     result = cur.fetchall()
     return result
 
+@full_transaction
 def join_event(user_id, event_id):
+    _, cur = get_db()
     ### need to be careful about the capacity
-    conn, cur = get_db()
     sql = f"""
     SELECT * FROM ATTEND FOR UPDATE;
 
@@ -200,14 +217,12 @@ def join_event(user_id, event_id):
     cur.execute(sql)
     capacity = cur.fetchone()
     if count[0] > capacity[0]:
-        conn.rollback()
-        return False
+        raise Exception("Event is full")
     else:
-        conn.commit()
         return True
 
 def get_org_animals(org_id):
-    conn, cur = get_db()
+    _, cur = get_db()
     sql = f"""
     SELECT a.Animal_ID, a.Animal_type, a.Animal_name, a.Animal_status, a.Reported_date, a.Reported_reason, a.Reported_location, a.Shelter_date, a.Adopt_user_ID, a.Report_user_ID
     FROM ANIMAL AS a
@@ -226,7 +241,7 @@ def get_org_animals(org_id):
     return result
 
 def get_org_sheltered_animals(org_id):
-    conn, cur = get_db()
+    _, cur = get_db()
     sql = f"""
     SELECT a.Animal_ID, a.Animal_type, a.Animal_name, a.Animal_status, a.Reported_date, a.Reported_reason, a.Reported_location, a.Shelter_date, a.Adopt_user_ID, a.Report_user_ID
     FROM ANIMAL AS a
@@ -238,7 +253,7 @@ def get_org_sheltered_animals(org_id):
     return result
 
 def get_unsheltered_animals():
-    conn, cur = get_db()
+    _, cur = get_db()
     sql = f"""
     SELECT a.Animal_ID, a.Animal_type, a.Animal_name, a.Animal_status, a.Reported_date, a.Reported_reason, a.Reported_location, a.Shelter_date, a.Adopt_user_ID, a.Report_user_ID
     FROM ANIMAL AS a
@@ -249,23 +264,19 @@ def get_unsheltered_animals():
     result = cur.fetchall()
     return result
 
+@full_transaction
 def shelter_animal(org_id, animal_id):
-    conn, cur = get_db()
-    try:
-        sql = f"""
-        UPDATE ANIMAL
-        SET Org_ID = '{org_id}', Shelter_date = CURRENT_DATE, Animal_status = 'Sheltered'
-        WHERE Animal_ID = '{animal_id}';
-        """
-        cur.execute(sql)
-        conn.commit()
-        return True
-    except:
-        conn.rollback()
-        return False
+    _, cur = get_db()
+    sql = f"""
+    UPDATE ANIMAL
+    SET Org_ID = '{org_id}', Shelter_date = CURRENT_DATE, Animal_status = 'Sheltered'
+    WHERE Animal_ID = '{animal_id}';
+    """
+    cur.execute(sql)
+    return True
 
 def get_animal_info(animal_id):
-    conn, cur = get_db()
+    _, cur = get_db()
     sql = f"""
     SELECT a.Animal_ID, a.Animal_type, a.Animal_name, a.Animal_status, a.Reported_date, a.Reported_reason, a.Reported_location, a.Shelter_date, a.Adopt_user_ID, a.Report_user_ID
     FROM ANIMAL AS a
@@ -275,30 +286,26 @@ def get_animal_info(animal_id):
     result = cur.fetchone()
     return result
 
+@full_transaction
 def apply_visit_org(user_id, org_id, visit_date):
-
-    conn, cur = get_db()
-    try:
-        # check if visit date is in the future
-        current_date = time.strftime("%Y-%m-%d")
-        if visit_date < current_date:
-            return False
-
-        sql = f"""
-        SELECT * FROM VISIT FOR UPDATE;
-
-        INSERT INTO VISIT
-        VALUES ('{user_id}', '{org_id}', '{visit_date}', 'Pending');
-        """
-        cur.execute(sql)
-        conn.commit()
-        return True
-    except:
-        conn.rollback()
+    _, cur = get_db()
+    # check if visit date is in the future
+    current_date = time.strftime("%Y-%m-%d")
+    if visit_date < current_date:
         return False
 
+    sql = f"""
+    SELECT * FROM VISIT FOR UPDATE;
+
+    INSERT INTO VISIT
+    VALUES ('{user_id}', '{org_id}', '{visit_date}', 'Pending');
+    """
+    cur.execute(sql)
+    conn.commit()
+    return True
+
 def get_user_schedules(user_id):
-    conn, cur = get_db()
+    _, cur = get_db()
     sql = f"""
     SELECT o.Org_name, v.Visit_date, v.STATUS
     FROM VISIT AS v
@@ -311,7 +318,7 @@ def get_user_schedules(user_id):
     return df.to_records()
 
 def get_org_pending_visits(org_id):
-    conn, cur = get_db()
+    _, cur = get_db()
     sql = f"""
     SELECT v.Visit_ID, v.Visit_date, u.User_name, u.User_email, u.User_phone_number
     FROM VISIT AS v
@@ -323,7 +330,7 @@ def get_org_pending_visits(org_id):
     return sqlio.read_sql_query(sql, conn).to_records()
 
 def get_org_approved_visits(org_id):
-    conn, cur = get_db()
+    _, cur = get_db()
     sql = f"""
     SELECT v.Visit_ID, v.Visit_date, u.User_name, u.User_email, u.User_phone_number, v.STATUS
     FROM VISIT AS v
@@ -335,7 +342,7 @@ def get_org_approved_visits(org_id):
     return sqlio.read_sql_query(sql, conn).to_records()
 
 def get_org_rejected_visits(org_id):
-    conn, cur = get_db()
+    _, cur = get_db()
     sql = f"""
     SELECT v.Visit_ID, v.Visit_date, u.User_name, u.User_email, u.User_phone_number, v.STATUS
     FROM VISIT AS v
@@ -346,53 +353,43 @@ def get_org_rejected_visits(org_id):
     # as pd
     return sqlio.read_sql_query(sql, conn).to_records()
 
+@full_transaction
 def set_visit_state(visit_id, state):
-    conn, cur = get_db()
+    _, cur = get_db()
     sql = f"""
     UPDATE VISIT
     SET STATUS = '{state}'
     WHERE Visit_ID = '{visit_id}';
     """
     cur.execute(sql)
-    conn.commit()
     return True
 
+@full_transaction
 def send_animal(org_id, animal_id, hospital_id, reason):
-    conn, cur = get_db()
+    _, cur = get_db()
     # Animal_ID,Hospital_ID,OrgID,Sent_date,Return_date,Sent_reason
-    try:
-        sql = f"""
-        INSERT INTO SENT_TO
-        VALUES ('{animal_id}', '{hospital_id}', '{org_id}', CURRENT_DATE, NULL, '{reason}');
-        """
-        cur.execute(sql)
-        conn.commit()
-        return True
-    except:
-        conn.rollback()
-        return False
+    sql = f"""
+    INSERT INTO SENT_TO
+    VALUES ('{animal_id}', '{hospital_id}', '{org_id}', CURRENT_DATE, NULL, '{reason}');
+    """
+    cur.execute(sql)
+    return True
 
+@full_transaction
 def take_back_animal(animal_id, hospital_id, sent_date):
-    conn, cur = get_db()
-    print(sent_date)
-    sent_date = datetime.strptime(sent_date, "%b. %d, %Y").date()
-    print(sent_date)
-    try:
-        sql = f"""
-        UPDATE SENT_TO
-        SET Return_date = CURRENT_DATE
-        WHERE Animal_ID = '{animal_id}' AND Hospital_ID = '{hospital_id}' AND Sent_date = '{sent_date}';
-        """
-        cur.execute(sql)
-        conn.commit()
-        return True
-    except Exception as e:
-        conn.rollback()
-        print(e)
-        return False
+    _, cur = get_db()
+    # sent_date = datetime.strptime(sent_date, "%b. %d, %Y").date()
+    sent_date = date_parser.parse(sent_date).date()
+    sql = f"""
+    UPDATE SENT_TO
+    SET Return_date = CURRENT_DATE
+    WHERE Animal_ID = '{animal_id}' AND Hospital_ID = '{hospital_id}' AND Sent_date = '{sent_date}';
+    """
+    cur.execute(sql)
+    return True
 
 def get_org_animals_at_hospital(org_id):
-    conn, cur = get_db()
+    _, cur = get_db()
     sql = f"""
     SELECT s.Animal_ID, a.Animal_type, a.Animal_name, a.Shelter_date, s.Hospital_ID, h.Hospital_Name, s.Sent_date, s.Sent_reason, h.Hospital_Address, h.Hospital_phone_number
     FROM SENT_TO AS s
@@ -408,7 +405,7 @@ def get_org_animals_at_hospital(org_id):
     return df.to_records()
 
 def get_org_donations(org_id):
-    conn, cur = get_db()
+    _, cur = get_db()
     sql = f"""
     SELECT d.Donate_ID, d.Donate_date, d.D_item_name, d.Donate_amount, d.Donor_display_name, u.User_name
     FROM DONATE AS d

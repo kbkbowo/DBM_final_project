@@ -454,13 +454,12 @@ def org_join(request, org_id=-1):
         status = "You are already in this organization."
     else:
         user_id = request.session['user_data'][0]
-        try: 
-            join_org(user_id, org_id)
+        success = join_org(user_id, org_id)
+        if success:
             status = "Successfully joined this organization."
-        except:
+        else:
             status = "Failed to join this organization. An user can only join each organization once per day."
         
-
     return render(request, 'org_join.html', {"status": status})
     
 def org_event_panel(request, org_id=-1):
@@ -685,7 +684,6 @@ def org_donation_panel(request, org_id):
     if request.method == 'POST' and "Submit" in request.POST:
         form = AddDonationForm(request.POST)
         if form.is_valid():
-            print("owo")
             success = form.execute_action(org_id=org_id)
             assert success
             return redirect('org_donation_panel', org_id=org_id)
@@ -740,10 +738,10 @@ def event_join(request, event_id=-1):
         return redirect('login')
     
     user_id = request.session['user_data'][0]
-    try: 
-        join_event(user_id, event_id)
+    success = join_event(user_id, event_id)
+    if success:
         status = "Successfully joined this event."
-    except:
+    else:
         status = "Failed to join this event. Are you already in this event?."
     
     return render(request, 'event_join.html', {"status": status})
