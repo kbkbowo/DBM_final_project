@@ -1,13 +1,23 @@
-<html>
+{% extends 'baseEvent.html' %} 
+{% block title %} Home {%endblock %}
+
+{% block navPageName %}
+    <a class="navbar-brand" href="#">Join Event</a>
+{% endblock %}
+
+{%block content %}
 <head>
     <title>Join Event</title>
 </head>
-<body>
-    <h1>Join Event</h1>
+
+    <!-- <h1>Join Event</h1> -->
+    <div class="form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto">
     {{ status }}
     <form method="post">
         {% csrf_token %}
         <button type="submit" formaction="../">Go Back</button>
     </form>
-</body>
-</html>
+</div>
+
+
+{%endblock%}

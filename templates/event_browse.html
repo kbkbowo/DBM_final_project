@@ -1,20 +1,26 @@
-<html>
+{% extends 'baseEvent.html' %} 
+{% block title %} Home {%endblock %}
 
+{% block navPageName %}
+    <a class="navbar-brand" href="#">Browse Events</a>
+{% endblock %}
+
+{%block content %}
 <head>
     <title>Browse Events</title>
 </head>
 
 <body>
-    <h1>Browse Events</h1>
-
+    
+<!-- 
     <form method="post">
         {% csrf_token %}
         <button type="submit" formaction="../">Home</button>
-    </form>
-    <form method="post">
+    </form> -->
+    <!-- <form method="post">
         {% csrf_token %}
         <button type="submit" formaction="../">Event Menu</button>
-    </form>
+    </form> -->
 
     <!-- event_id = self.cleaned_data['event_id']
     event_name = self.cleaned_data['event_name']
@@ -26,9 +32,10 @@
     event_description = self.cleaned_data['event_description']
     org_id = self.cleaned_data['org_id']
     org_name = self.cleaned_data['org_name'] -->
-    <h2>My Events</h2>
+    
     <!-- # e.Event_ID, e.Event_date, e.Event_name, e.Capacity, e.Event_location, e.Event_description, e.Start_time, e.End_time -->
-    <table>
+    <h2>My Events</h2>
+    <table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px;">
         <tr>
             <th>Event ID</th>
             <th>Event Date</th>
@@ -53,6 +60,7 @@
         {% endfor %}
     </table>
 
+    <div class="form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto">
     <h2>Browse Events</h2>
     <form method="post">
         {% csrf_token %}
@@ -112,13 +120,15 @@
         </table>
         <button type="submit" name="Search">Search</button>
     </form>
-
+    </div>
+    
+    <br><br>
     <h2>Search Results</h2>
     <p>Use the search button above to find the event you are interested in! You can join the events listed here by pressing the button.</p>
     <p>Found {{ len_events }} events. </p>
     
     {% if len_events != 0 %}
-    <table>
+    <table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px;">
         <tr>
             <th>Event ID</th>
             <th>Event Name</th>
@@ -159,4 +169,4 @@
 </body>
 
 
-</html>
+{% endblock %}
