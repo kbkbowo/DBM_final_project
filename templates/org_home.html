@@ -105,7 +105,7 @@
         <!-- display {{ owned_orgs }} with a table-->
         <div class="Founder">
         <h2>Organizations as Founder: </h2>
-        <table style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px;">
+        <table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px;">
             <tr>
                 <th ms-auto>Org_ID</th>
                 <th ms-auto>Org_Name</th>
@@ -135,10 +135,13 @@
     
     <div class="Member">
         <h2>Organizations as Member: </h2>
-        <table style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px;">
+        <table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px;">
             <tr>
                 <th ms-auto>Org_ID</th>
                 <th ms-auto>Org_Name</th>
+                <!-- <th ms-auto>Address</th>
+                <th ms-auto>Phone_Num</th>
+                <th ms-auto>Founded_Date</th> -->
                 <th ms-auto>Homepage</th>
                 <th ms-auto>Event Panel</th>
                 <th ms-auto>Animal Panel</th>
@@ -149,6 +152,9 @@
             <tr>
                 <td ms-auto>{{ org.org_id }}</td>
                 <td ms-auto>{{ org.org_name }}</td>
+                <!-- <td ms-auto>{{ org.org_address }}</td>
+                <td ms-auto>{{ org.org_phone }}</td>
+                <td ms-auto>{{ org.org_founded_date }}</td> -->
                 <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}">Homepage</button></form></td>
                 <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}/event_panel">Event Panel</button></form></td>
                 <td><form><button type="submit" formaction="../org_home/{{ org.org_id }}/animal_panel">Animal Panel</button></form></td>
