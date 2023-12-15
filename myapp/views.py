@@ -646,8 +646,10 @@ def org_send_animal(request, org_id, animal_id, hospital_id):
         if 'report_reason' in request.POST:
             report_reason = request.POST.get('report_reason')
             success = send_animal(org_id, animal_id, hospital_id, report_reason)
-            assert success
-            return redirect('org_animal_panel', org_id=org_id)
+            if success:
+                return redirect('org_animal_panel', org_id=org_id)
+            else:
+                return render(request, 'org_animal_hospital_send.html', {'animal': animal_info, 'status': 'Failed to send this animal. One animal can only be sent to a hospital once per day.'})
     
     return render(request, 'org_animal_hospital_send.html', {'animal': animal_info})
 

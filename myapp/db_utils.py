@@ -213,6 +213,12 @@ def get_org_animals(org_id):
     FROM ANIMAL AS a
     WHERE a.Org_ID = '{org_id}'
         AND a.Animal_status = 'Sheltered'
+        AND a.Animal_ID NOT IN (
+            SELECT s.Animal_ID
+            FROM SENT_TO AS s
+            WHERE s.Return_date IS NULL
+        )
+    GROUP BY a.Animal_ID
     ORDER BY a.Shelter_date DESC;
     """
     cur.execute(sql)
