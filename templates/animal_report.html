@@ -1,17 +1,23 @@
 {% extends 'baseHome.html' %} 
 {% block title %} Home {%endblock %}
 
+{% block navPageName %}
+    <a class="navbar-brand" href="#">Report Animal</a>
+{% endblock %}
+
 {%block content %}
 <head>
     <title>Report Animal</title>
 </head>
 
-<body>
+
+
+<div class="form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto">
     <h1>Report Animal</h1>
     <form method="post">
         {% csrf_token %}
         {{ status }}
-        <table>
+        <table style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px; " >
             <tr>
                 <td>Animal Type:</td>
                 <td>{{ form.animal_type }}</td>
@@ -30,10 +36,10 @@
             </tr>
             <tr>
                 <td> </td>
-                <td><button type="submit" name="Submit">Submit</button></td>
+                <td><button type="submit" name="Submit" style="width: 180px;">Submit</button></td>
             </tr>
         </table>
     </form>
-</body>
+</div>
     
 {% endblock%}   
