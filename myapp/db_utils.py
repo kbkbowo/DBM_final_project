@@ -4,6 +4,7 @@ import pandas as pd
 import pandas.io.sql as sqlio
 import json
 import time
+from datetime import datetime
 
 config = "configs/db_aws.yaml"
 
@@ -211,6 +212,7 @@ def get_org_animals(org_id):
     SELECT a.Animal_ID, a.Animal_type, a.Animal_name, a.Animal_status, a.Reported_date, a.Reported_reason, a.Reported_location, a.Shelter_date, a.Adopt_user_ID, a.Report_user_ID
     FROM ANIMAL AS a
     WHERE a.Org_ID = '{org_id}'
+        AND a.Animal_status = 'Sheltered'
     ORDER BY a.Shelter_date DESC;
     """
     cur.execute(sql)
@@ -348,4 +350,54 @@ def set_visit_state(visit_id, state):
     cur.execute(sql)
     conn.commit()
     return True
+
+def send_animal(org_id, animal_id, hospital_id, reason):
+    conn, cur = get_db()
+    # Animal_ID,Hospital_ID,OrgID,Sent_date,Return_date,Sent_reason
+    try:
+        sql = f"""
+        INSERT INTO SENT_TO
+        VALUES ('{animal_id}', '{hospital_id}', '{org_id}', CURRENT_DATE, NULL, '{reason}');
+        """
+        cur.execute(sql)
+        conn.commit()
+        return True
+    except:
+        conn.rollback()
+        return False
+
+def take_back_animal(animal_id, hospital_id, sent_date):
+    conn, cur = get_db()
+    print(sent_date)
+    sent_date = datetime.strptime(sent_date, "%b. %d, %Y").date()
+    print(sent_date)
+    try:
+        sql = f"""
+        UPDATE SENT_TO
+        SET Return_date = CURRENT_DATE
+        WHERE Animal_ID = '{animal_id}' AND Hospital_ID = '{hospital_id}' AND Sent_date = '{sent_date}';
+        """
+        cur.execute(sql)
+        conn.commit()
+        return True
+    except Exception as e:
+        conn.rollback()
+        print(e)
+        return False
+
+def get_org_animals_at_hospital(org_id):
+    conn, cur = get_db()
+    sql = f"""
+    SELECT s.Animal_ID, a.Animal_type, a.Animal_name, a.Shelter_date, s.Hospital_ID, h.Hospital_Name, s.Sent_date, s.Sent_reason, h.Hospital_Address, h.Hospital_phone_number
+    FROM SENT_TO AS s
+        JOIN ANIMAL AS a ON s.Animal_ID = a.Animal_ID
+        JOIN HOSPITAL AS h ON s.Hospital_ID = h.Hospital_ID
+    WHERE s.Org_ID = '{org_id}' AND s.Return_date IS NULL
+    ORDER BY s.Sent_date DESC;
+    """
+    df = sqlio.read_sql_query(sql, conn)
+    # process datetime obj to text
+    # df['sent_date'] = df['sent_date'].astype(str)
+    # process the date cols
+    return df.to_records()
 

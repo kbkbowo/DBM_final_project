@@ -507,3 +507,28 @@ class OrgVisitForm(forms.Form):
             print(e)
             conn.rollback()
             return False
+
+class SelectHospitalForm(forms.Form):
+    hospital_id = forms.CharField(required=False)
+    hospital_name = forms.CharField(required=False)
+    hospital_address = forms.CharField(required=False)
+    hospital_phone = forms.CharField(required=False)
+
+    def query_search(self):
+        conn, cur = get_db()
+        hospital_id = self.cleaned_data['hospital_id']
+        hospital_name = self.cleaned_data['hospital_name']
+        hospital_address = self.cleaned_data['hospital_address']
+        hospital_phone = self.cleaned_data['hospital_phone']
+
+        sql = f"""
+        SELECT *
+        FROM HOSPITAL AS h
+        WHERE h.Hospital_ID LIKE '%{hospital_id}%' 
+            AND h.Hospital_Name LIKE '%{hospital_name}%' 
+            AND h.Hospital_Address LIKE '%{hospital_address}%' 
+            AND h.Hospital_phone_number LIKE '%{hospital_phone}%';
+        """
+        df = sqlio.read_sql_query(sql, conn)
+        return df.to_records()
+

@@ -1,0 +1,92 @@
+
+<head>
+    <title>Send Animal to Hospital</title>
+</head>
+
+<body>
+    <h1>Send Animal to Hospital</h1>
+    {{ status }}
+    <form method="GET">
+        <button>
+            <a href="../../">Back</a>
+        </button>
+    </form>
+
+    <!-- display animal information here -->
+    <h2>Animal Information</h2>
+    <table>
+        <tr>
+            <th>Animal ID</th>
+            <th>Animal Type</th>
+            <th>Animal Name</th>
+            <th>Animal Status</th>
+            <th>Reported Date</th>
+            <th>Reported Reason</th>
+            <th>Reported Location</th>
+            <th>Shelter Date</th>
+        </tr>
+        <tr>
+            <td>{{ animal.animal_id }}</td>
+            <td>{{ animal.animal_type }}</td>
+            <td>{{ animal.animal_name }}</td>
+            <td>{{ animal.animal_status }}</td>
+            <td>{{ animal.reported_date }}</td>
+            <td>{{ animal.reported_reason }}</td>
+            <td>{{ animal.reported_location }}</td>
+            <td>{{ animal.shelter_date }}</td>
+        </tr>
+    </table>
+
+    <h2>Search for Hospital</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td><label for="hospital_id">Hospital Name</label></td>
+                <td>{{ form.hospital_id }}</td>
+            </tr>
+            <tr>
+                <td><label for="hospital_name">Hospital Name</label></td>
+                <td>{{ form.hospital_name }}</td>
+            </tr>
+            <tr>
+                <td><label for="hospital_address">Hospital Address</label></td>
+                <td>{{ form.hospital_address }}</td>
+            </tr>
+            <tr>
+                <td><label for="hospital_phone_number">Hospital Phone</label></td>
+                <td>{{ form.hospital_phone }}</td>
+            </tr>
+            <tr>
+                <td> </td>
+                <td><button type="submit" name="Search">Search</button></td>
+            </tr>
+        </table>
+    </form>
+    {% if hospitals|length > 0 %}
+    <h2>Search Results</h2>
+    <table>
+        <tr>
+            <th>Hospital ID</th>
+            <th>Hospital Name</th>
+            <th>Hospital Address</th>
+            <th>Hospital Phone</th>
+            <th>Send</th>
+        </tr>
+        {% for hospital in hospitals %}
+        <tr>
+            <td>{{ hospital.hospital_id }}</td>
+            <td>{{ hospital.hospital_name }}</td>
+            <td>{{ hospital.hospital_address }}</td>
+            <td>{{ hospital.hospital_phone_number }}</td>
+            <td>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" formaction="{{ hospital.hospital_id }}/send/">Send</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+</body>
