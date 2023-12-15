@@ -144,6 +144,7 @@
             <th ms-auto>Event Panel</th>
             <th ms-auto>Animal Panel</th>
             <th ms-auto>Visit Panel</th>
+            <th ms-auto>Donation Panel</th>
             <th ms-auto>Leave</th>
         </tr>
         {% for org in attending_orgs %}
@@ -164,6 +165,9 @@
             </td>
             <td>
                 <form><button type="submit" formaction="../org_home/{{ org.org_id }}/visit_panel">Visit Panel</button></form>
+            </td>
+            <td>
+                <form><button type="submit" formaction="../org_home/{{ org.org_id }}/donation_panel">Donation Panel</button></form>
             </td>
             <td>
                 <form><button type="submit" formaction="../org_home/{{ org.org_id }}/leave">Leave</button></form>

@@ -1,0 +1,64 @@
+<head>
+    <title>Record Donation</title>
+</head>
+
+<body>
+
+    <h1>Record Donation</h1>
+
+    <form method="GET">
+        <button>
+            <a href="../../">Back</a>
+        </button>
+    </form>
+
+    <form method="POST">
+        {% csrf_token %}
+        <h2>Add Donation</h2>
+        <table>
+            <tr>
+                <td><label for="user_name">Donor Display Name</label></td>
+                <td>{{ form.donor_display_name }}</td>
+            </tr>
+            <tr>
+                <td><label for="donor_id">Donor ID</label></td>
+                <td>{{ form.donor_id }}</td>
+            </tr>
+            <tr>
+                <td><label for="item_name">Item_name</label></td>
+                <td>{{ form.item_name }}</td>
+            </tr>
+            <tr>
+                <td><label for="amount">Amount</label></td>
+                <td>{{ form.amount }}</td>
+            </tr>
+        </table>
+        <button type="submit" name="Submit">Submit</button>
+    </form>
+
+    <h2>Donations</h2>
+    <p> Your organization have {{ donations|length }} donations! </p>
+
+    <table>
+        <tr>
+            <th>Donor Name</th>
+            <th>Item Category</th>
+            <th>Amount</th>
+            <th>Donate Date</th>
+        </tr>
+        {% for donation in donations %}
+        <tr>
+            {% if donation.donor_display_name is None %} {% if donation.user_name is None %}
+            <td>Anonymous</td>
+            {% else %}
+            <td>{{ donation.user_name }}</td>
+            {% endif %} {% else %}
+            <td>{{ donation.donor_display_name }}</td>
+            {% endif %}
+            <td>{{ donation.d_item_name }}</td>
+            <td>{{ donation.donate_amount }}</td>
+            <td>{{ donation.donate_date }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>

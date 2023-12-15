@@ -532,3 +532,29 @@ class SelectHospitalForm(forms.Form):
         df = sqlio.read_sql_query(sql, conn)
         return df.to_records()
 
+class AddDonationForm(forms.Form):
+    donor_display_name = forms.CharField(required=False)
+    donor_id = forms.CharField(required=False)
+    item_name = forms.CharField(required=False)
+    amount = forms.IntegerField(required=True)
+
+    def execute_action(self, org_id):
+        conn, cur = get_db()
+        try: 
+            donor_display_name = f"'{self.cleaned_data['donor_display_name']}'" if self.cleaned_data['donor_display_name'] else "NULL"
+            donor_id = f"'{self.cleaned_data['donor_id']}'" if self.cleaned_data['donor_id'] else "NULL"
+            item_name = self.cleaned_data['item_name']
+            amount = self.cleaned_data['amount']
+            # Insert the donation
+            sql = f"""
+            INSERT INTO DONATE (Donor_ID, Donor_display_name, Org_ID, Donate_date, D_Item_name, Donate_amount)
+            VALUES ({donor_id}, {donor_display_name}, '{org_id}', CURRENT_DATE, '{item_name}', '{amount}');
+            """
+            cur.execute(sql)
+            conn.commit()
+            return True
+        except Exception as e:
+            print(e)
+            conn.rollback()
+            return False
+        

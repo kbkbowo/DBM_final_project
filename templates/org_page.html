@@ -1,36 +1,31 @@
 <!-- display the org infos -->
-{% extends 'baseOrghome.html' %} 
-{% block title %} Org_page {%endblock %}
+{% extends 'baseOrghome.html' %} {% block title %} Org_page {%endblock %} {% block navPageName %}
+<a class="navbar-brand" href="#">Organization Home Page</a> {% endblock %} {%block content %}
+<div class="form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto; ">
 
-{% block navPageName %}
-    <a class="navbar-brand" href="#">Organization Home Page</a>
-{% endblock %}
-
-{%block content %}
-    <div class = "form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto; ">
     <head>
         <title>{{ org_info.org_name }}</title>
     </head>
-    
-        <h1>{{ org_info.org_name }}</h1>
-        {% if attending %}
-        <p>You are currently in this organization.</p>
-        {% else %}
-        <p>You are currently not in this organization.</p>
-        {% endif %}
-        <div class = "container" style="display: flex; justify-content:space-around; margin-top: 5px; margin-bottom: 10px;"> 
-                <form action="../" method="get"><button type="submit">Back</button></form>
-                {% if not attending %}
-                <form action="join/" method="get"><button type="submit">Join</button></form>
-                {% else %}
-                <form action="leave/" method="get"><button type="submit">Leave</button></form>
-                {% endif %}
-        </div>
-    
-        
 
-        <h2>Organization Information</h2>
-        <div class="form-container" style=" width: fit-content; margin: 0 auto; margin-bottom: 10px;">
+    <h1>{{ org_info.org_name }}</h1>
+    {% if attending %}
+    <p>You are currently in this organization.</p>
+    {% else %}
+    <p>You are currently not in this organization.</p>
+    {% endif %}
+    <div class="container" style="display: flex; justify-content:space-around; margin-top: 5px; margin-bottom: 10px;">
+        <form action="../" method="get"><button type="submit">Back</button></form>
+        {% if not attending %}
+        <form action="join/" method="get"><button type="submit">Join</button></form>
+        {% else %}
+        <form action="leave/" method="get"><button type="submit">Leave</button></form>
+        {% endif %}
+    </div>
+
+
+
+    <h2>Organization Information</h2>
+    <div class="form-container" style=" width: fit-content; margin: 0 auto; margin-bottom: 10px;">
         <table>
             <tr>
                 <th>Org_ID</th>
@@ -53,9 +48,9 @@
                 <td>{{ org_info.org_founded_date }}</td>
             </tr>
         </table>
-        </div>
-        <h2>Organization Founders</h2>
-        <div class="form-container" style=" width: fit-content; margin: 0 auto;">
+    </div>
+    <h2>Organization Founders</h2>
+    <div class="form-container" style=" width: fit-content; margin: 0 auto;">
         <table>
             <tr>
                 <th>Founder_Name</th>
@@ -70,7 +65,32 @@
             </tr>
             {% endfor %}
         </table>
-    </div>
+
+        <h2>Organization Sponsors</h2>
+        <div class="form-container" style=" width: fit-content; margin: 0 auto;">
+            <table>
+                <tr>
+                    <th>Donor Name</th>
+                    <th>Item Category</th>
+                    <th>Amount</th>
+                    <th>Donate Date</th>
+                </tr>
+                {% for donation in donations %}
+                <tr>
+                    {% if donation.donor_display_name is None %} {% if donation.user_name is None %}
+                    <td>Anonymous</td>
+                    {% else %}
+                    <td>{{ donation.user_name }}</td>
+                    {% endif %} {% else %}
+                    <td>{{ donation.donor_display_name }}</td>
+                    {% endif %}
+                    <td>{{ donation.d_item_name }}</td>
+                    <td>{{ donation.donate_amount }}</td>
+                    <td>{{ donation.donate_date }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
     </div>
 
-{% endblock %}
+    {% endblock %}

@@ -92,27 +92,15 @@ def create_tables(conn, cur):
 
     """
     CREATE TABLE DONATE (
-        User_ID VARCHAR(20),
-        Org_ID VARCHAR(20),
+        DONATE_ID SERIAL PRIMARY KEY,
+        Donor_ID VARCHAR(20),
+        Donor_display_name VARCHAR(20),
+        Org_ID VARCHAR(20) NOT NULL,
         Donate_date DATE NOT NULL,
         D_item_name VARCHAR(20) NOT NULL,
         Donate_amount INT NOT NULL,
-        PRIMARY KEY (User_ID, Org_ID, Donate_date),
         FOREIGN KEY (User_ID) REFERENCES USER_(User_ID) ON DELETE CASCADE ON UPDATE CASCADE,
         FOREIGN KEY (Org_ID) REFERENCES ORGANIZATION(Org_ID) ON DELETE CASCADE ON UPDATE CASCADE
-    );""",
-
-    """
-    CREATE TABLE LEND_SUPPLEMENT (
-        Org_ID_out VARCHAR(20),
-        Org_ID_in VARCHAR(20),
-        Supplement_name VARCHAR(20) NOT NULL,
-        Supplement_quantity INT NOT NULL,
-        Lend_date DATE,
-        Expected_return_date DATE NOT NULL,
-        PRIMARY KEY (Org_ID_out, Org_ID_in, Lend_date),
-        FOREIGN KEY (Org_ID_out) REFERENCES ORGANIZATION(Org_ID) ON DELETE CASCADE ON UPDATE CASCADE,
-        FOREIGN KEY (Org_ID_in) REFERENCES ORGANIZATION(Org_ID) ON DELETE CASCADE ON UPDATE CASCADE
     );""",
 
     """
@@ -201,16 +189,29 @@ if __name__ == "__main__":
     conn, cur = get_db()
     # get the meta table of animal and print the constraint naem
     # drop constraint "animal_animal_status_check"
-    sql = """
-    DROP TABLE VISIT;
-
-    CREATE TABLE VISIT (
-        Visit_ID SERIAL PRIMARY KEY,
-        User_ID VARCHAR(20),
-        Org_ID VARCHAR(20),
-        Visit_date DATE,
-        STATUS VARCHAR(10) NOT NULL CHECK (STATUS IN ('Pending', 'Approved', 'Rejected')),
-        FOREIGN KEY (User_ID) REFERENCES USER_(User_ID) ON DELETE CASCADE ON UPDATE CASCADE,
+    # sql = """
+    # CREATE TABLE TRANSFER (
+    #     Animal_ID VARCHAR(10),
+    #     Org_ID_out VARCHAR(20),
+    #     Org_ID_in VARCHAR(20),
+    #     Transfer_date DATE,
+    #     Transfer_reason VARCHAR(200) NOT NULL,
+    #     FOREIGN KEY (Animal_ID) REFERENCES ANIMAL(Animal_ID) ON DELETE CASCADE ON UPDATE CASCADE,
+    #     FOREIGN KEY (Org_ID_out) REFERENCES ORGANIZATION(Org_ID) ON DELETE CASCADE ON UPDATE CASCADE,
+    # );
+    # """
+    conn.rollback()
+    conn, cur = get_db()
+    sql= """
+    CREATE TABLE DONATE (
+        DONATE_ID SERIAL PRIMARY KEY,
+        Donor_ID VARCHAR(20),
+        Donor_display_name VARCHAR(20),
+        Org_ID VARCHAR(20) NOT NULL,
+        Donate_date DATE NOT NULL,
+        D_item_name VARCHAR(20) NOT NULL,
+        Donate_amount INT NOT NULL,
+        FOREIGN KEY (Donor_ID) REFERENCES USER_(User_ID) ON DELETE CASCADE ON UPDATE CASCADE,
         FOREIGN KEY (Org_ID) REFERENCES ORGANIZATION(Org_ID) ON DELETE CASCADE ON UPDATE CASCADE
     );
     """

@@ -401,3 +401,16 @@ def get_org_animals_at_hospital(org_id):
     # process the date cols
     return df.to_records()
 
+def get_org_donations(org_id):
+    conn, cur = get_db()
+    sql = f"""
+    SELECT d.Donate_ID, d.Donate_date, d.D_item_name, d.Donate_amount, d.Donor_display_name, u.User_name
+    FROM DONATE AS d
+        LEFT JOIN USER_ AS u ON d.Donor_ID = u.User_ID
+    WHERE d.Org_ID = '{org_id}'
+    ORDER BY d.Donate_date DESC;
+    """
+    df = sqlio.read_sql_query(sql, conn)
+    return df.to_records()
+
+

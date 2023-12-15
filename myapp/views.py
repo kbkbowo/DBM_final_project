@@ -1,5 +1,5 @@
 from django.shortcuts import render, HttpResponse, redirect
-from .forms import LoginForm, SignupForm, QueryUsersForm, ManageUserForm, BuildOrgForm, ManageFounderForm, JoinOrgForm, CreateEventForm, BrowseEventForm, ReportAnimalForm, OrgVisitForm, SelectHospitalForm
+from .forms import *
 import datetime
 from .db_utils import *
 
@@ -270,6 +270,7 @@ def org_page(request, org_id=-1):
     org_info = Org(*get_org_info(org_id)).dict
     org_founders = parse_data(User, get_org_founders(org_id))
     attended_orgs = parse_data(Org, get_attending_orgs(request.session['user_data'][0]))
+    donators =  get_org_donations(org_id)
     if org_id in [org.org_id for org in attended_orgs]:
         attending = True
     else:
@@ -279,6 +280,7 @@ def org_page(request, org_id=-1):
         "org_info": org_info,
         "org_founders": org_founders,
         "attending": attending,
+        "donations": donators,
     }
 
     return render(request, 'org_page.html', ctx_dict)
@@ -668,6 +670,27 @@ def org_take_back_animal(request, org_id, animal_id, hospital_id, sent_date):
             return redirect('org_animal_panel', org_id=org_id)
     
     return HttpResponse("Invalid request.")
+
+def org_donation_panel(request, org_id):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'donation_panel'
+        return redirect('login')
+
+    # check if the user is the member of the org
+    if org_id not in [org.org_id for org in parse_data(Org, get_attending_orgs(request.session['user_data'][0]))]:
+        return redirect('org_home')
+
+    if request.method == 'POST' and "Submit" in request.POST:
+        form = AddDonationForm(request.POST)
+        if form.is_valid():
+            print("owo")
+            success = form.execute_action(org_id=org_id)
+            assert success
+            return redirect('org_donation_panel', org_id=org_id)
+        else:
+            return render(request, 'org_donation_panel.html', {'form': form, 'status': 'Invalid inputs.'})   
+
+    return render(request, 'org_donation_panel.html', {'form': AddDonationForm(initial={'item_name': 'Money'}), 'donations': get_org_donations(org_id)})
 
 def event(request):
     if request.session.get('user_data') is None:
