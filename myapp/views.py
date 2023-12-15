@@ -1,6 +1,5 @@
 from django.shortcuts import render, HttpResponse, redirect
-from .forms import LoginForm, SignupForm, QueryUsersForm, ManageUserForm, BuildOrgForm, ManageFounderForm, JoinOrgForm, CreateEventForm, BrowseEventForm, ReportAnimalForm, OrgVisitForm, SelectHospitalForm
-import datetime
+from .forms import LoginForm, SignupForm, QueryUsersForm, ManageUserForm, BuildOrgForm, ManageFounderForm, JoinOrgForm, CreateEventForm, BrowseEventForm, ReportAnimalForm, OrgVisitForm
 from .db_utils import *
 
 class User:
@@ -492,9 +491,9 @@ def org_create_event(request, org_id=-1):
             print(result)
             return redirect('org_home')
         else:
-            return render(request, 'org_event_create.html', {'form': form, 'status': 'Invalid inputs.'})
+            return render(request, 'org_create_event.html', {'form': form, 'status': 'Invalid inputs.'})
         
-    return render(request, 'org_event_create.html', {'form': BuildOrgForm()})
+    return render(request, 'org_create_event.html', {'form': BuildOrgForm()})
 
 def org_delete_event(request, org_id, event_id):
     if request.session.get('user_data') is None:
@@ -511,7 +510,7 @@ def org_delete_event(request, org_id, event_id):
             return redirect('org_event_panel', org_id=org_id)
         
     event_info = Event(*get_event_info(event_id)).dict
-    return render(request, 'org_event_delete.html', {"event_info": event_info})
+    return render(request, 'org_delete_event.html', {"event_info": event_info})
 
 def org_animal_panel(request, org_id=-1):
     if request.session.get('user_data') is None:
@@ -522,12 +521,9 @@ def org_animal_panel(request, org_id=-1):
     if org_id not in [org.org_id for org in parse_data(Org, get_attending_orgs(request.session['user_data'][0]))]:
         return redirect('org_home')
 
-    animals_at_hospital = get_org_animals_at_hospital(org_id)
-
     ctx_dict = {
         "org_info": Org(*get_org_info(org_id)).dict,
         "unsheltered_animals": parse_data(Animal, get_unsheltered_animals()),
-        "animals_at_hospital": animals_at_hospital,
         "org_animals": parse_data(Animal, get_org_animals(org_id)),
     }
     return render(request, 'org_animal_panel.html', ctx_dict)
@@ -546,11 +542,11 @@ def org_shelter_animal(request, org_id, animal_id):
     if request.method == 'POST':
         success = shelter_animal(org_id, animal_id)
         if success:
-            return render(request, 'org_animal_shelter.html', {'animal_info': animal_info, 'status': 'Successfully sheltered this animal.'})
+            return render(request, 'org_shelter_animal.html', {'animal_info': animal_info, 'status': 'Successfully sheltered this animal.'})
         else:
-            return render(request, 'org_animal_shelter.html', {'animal_info': animal_info, 'status': 'Failed to shelter this animal. This animal might have been sheltered by another organization sheltered.'})
+            return render(request, 'org_shelter_animal.html', {'animal_info': animal_info, 'status': 'Failed to shelter this animal. This animal might have been sheltered by another organization sheltered.'})
 
-    return render(request, 'org_animal_shelter.html', {'animal_info': animal_info})
+    return render(request, 'org_shelter_animal.html', {'animal_info': animal_info})
 
 def org_visit_panel(request, org_id=-1):
     if request.session.get('user_data') is None:
@@ -602,70 +598,6 @@ def org_visit_reject(request, org_id, visit_id):
     if request.method == 'POST':
         set_visit_state(visit_id, 'Rejected')
         return redirect('org_visit_panel', org_id=org_id)
-    
-    return HttpResponse("Invalid request.")
-
-def org_hospital_animal(request, org_id, animal_id):
-    if request.session.get('user_data') is None:
-        request.session['last_page'] = 'animal_hospital'
-        return redirect('login')
-    
-    # check if the user is the member of the org
-    if org_id not in [org.org_id for org in parse_data(Org, get_attending_orgs(request.session['user_data'][0]))]:
-        return redirect('org_home')
-
-    animal_info = Animal(*get_animal_info(animal_id)).dict
-
-    if request.method == 'POST' and "Search" in request.POST:
-        form = SelectHospitalForm(request.POST)
-        if form.is_valid():
-            hospitals = form.query_search()
-            ctx_dict = {
-                "animal": animal_info,
-                "form": form,
-                "hospitals": hospitals,
-            }
-            return render(request, 'org_animal_hospital.html', ctx_dict)
-
-    return render(request, 'org_animal_hospital.html', {'animal': animal_info, 'form': SelectHospitalForm()})
-
-def org_send_animal(request, org_id, animal_id, hospital_id):
-    if request.session.get('user_data') is None:
-        request.session['last_page'] = 'animal_adopt'
-        return redirect('login')
-    
-    # check if the user is the member of the org
-    if org_id not in [org.org_id for org in parse_data(Org, get_attending_orgs(request.session['user_data'][0]))]:
-        return redirect('org_home')
-    
-    animal_info = Animal(*get_animal_info(animal_id)).dict
-
-    if request.method == 'POST':
-        if 'report_reason' in request.POST:
-            report_reason = request.POST.get('report_reason')
-            success = send_animal(org_id, animal_id, hospital_id, report_reason)
-            assert success
-            return redirect('org_animal_panel', org_id=org_id)
-    
-    return render(request, 'org_animal_hospital_send.html', {'animal': animal_info})
-
-def org_take_back_animal(request, org_id, animal_id, hospital_id, sent_date):
-    if request.session.get('user_data') is None:
-        request.session['last_page'] = 'animal_adopt'
-        return redirect('login')
-    
-    # check if the user is the member of the org
-    if org_id not in [org.org_id for org in parse_data(Org, get_attending_orgs(request.session['user_data'][0]))]:
-        print("nope")
-        return redirect('org_home')
-    
-    animal_info = Animal(*get_animal_info(animal_id)).dict
-
-    if request.method == 'POST':
-        if "Bring Back" in request.POST:
-            success = take_back_animal(animal_id, hospital_id, sent_date)
-            assert success
-            return redirect('org_animal_panel', org_id=org_id)
     
     return HttpResponse("Invalid request.")
 
@@ -756,6 +688,13 @@ def adopt_animal(request):
         elif "Apply" in request.POST:
             form = OrgVisitForm(request.POST)
             if form.is_valid():
+                selected_org_id = request.session['selected_org_id']
+                animals = parse_data(Animal, get_org_sheltered_animals(selected_org_id))
+                user_id = request.session['user_data'][0]
+                success = form.execute_action(user_id, selected_org_id)
+                status = "Successfully applied for visit!" if success else "Failed to apply for visit. Have you entered a valid date?"
+                return render(request, 'animal_adopt.html', {'status': status, 'animals': animals, 'orgs': orgs, 'selected_org_id': selected_org_id, 'form': form})
+            else:
                 selected_org_id = request.session['selected_org_id']
                 animals = parse_data(Animal, get_org_sheltered_animals(selected_org_id))
                 user_id = request.session['user_data'][0]
