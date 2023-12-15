@@ -1,13 +1,14 @@
 {% extends 'baseHome.html' %} 
-{% block title %} Home {%endblock %}
+{% block title %} Adopt Animal {%endblock %}
 
 {%block content %}
+
+{% load widget_tweaks %}
 
 <head>
     <title>Adopt Animal</title>
 </head>
 
-<body>
     <h1>Adopt Animal</h1>
     <form method="post">
         {% csrf_token %}
@@ -21,7 +22,7 @@
             </option>
             {% endfor %}
         </select>
-        <button type="submit" name="Search">Search</button>
+        <button type="submit" name="Search" style="margin-bottom: 20px;">Search</button>
     </form>
     {% if form %}
     <form method="post">
@@ -29,14 +30,17 @@
         <p>You can apply for a visit to the selected organization.</p>
         <form method="post">
             {% csrf_token %}
-            {{ status }}
-            {{ form }}
-            <button type="submit" name="Apply">Apply</button>
+            <label type="text-align">Visit Date:</label>
+            {{ form.visit_date| attr:"placeholder: YYYY-MM-DD" | attr:"style:width:140px;" }}
+            <button type="submit" name="Apply">Apply</button> <br>
+            <div style="font-size: large;  color:blue; margin-bottom: 20px;">{{ status}}</div>
+            
     </form>
     {% endif %}
 
+    {% if animals|length > 0 or ApplyFault == True%}
     <h2>Search Results</h2>
-    <table>
+    <table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px;">
         <tr>
             <th>Animal Type</th>
             <th>Animal ID</th>
@@ -54,7 +58,7 @@
         </tr>
         {% endfor %}
     </table>
+    {% endif %}
 
-</body>
     
     {% endblock %}
