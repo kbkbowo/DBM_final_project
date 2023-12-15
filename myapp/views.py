@@ -762,6 +762,13 @@ def adopt_animal(request):
                 success = form.execute_action(user_id, selected_org_id)
                 status = "Successfully applied for visit!" if success else "Failed to apply for visit. Have you entered a valid date?"
                 return render(request, 'animal_adopt.html', {'status': status, 'animals': animals, 'orgs': orgs, 'selected_org_id': selected_org_id, 'form': form})
+            else:
+                selected_org_id = request.session['selected_org_id']
+                animals = parse_data(Animal, get_org_sheltered_animals(selected_org_id))
+                user_id = request.session['user_data'][0]
+                success = form.execute_action(user_id, selected_org_id)
+                status = "Successfully applied for visit!" if success else "Failed to apply for visit. Have you entered a valid date?"
+                return render(request, 'animal_adopt.html', {'status': status, 'animals': animals, 'orgs': orgs, 'selected_org_id': selected_org_id, 'form': form})
 
     return render(request, 'animal_adopt.html', {'orgs': orgs})
 
