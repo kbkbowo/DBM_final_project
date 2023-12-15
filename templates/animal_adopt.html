@@ -1,7 +1,4 @@
-{% extends 'baseHome.html' %} 
-{% block title %} Home {%endblock %}
-
-{%block content %}
+{% extends 'baseHome.html' %} {% block title %} Home {%endblock %} {%block content %}
 
 <head>
     <title>Adopt Animal</title>
@@ -23,19 +20,16 @@
         </select>
         <button type="submit" name="Search">Search</button>
     </form>
-    {% if form %}
+    <br> {% if form %}
     <form method="post">
         {% csrf_token %}
         <p>You can apply for a visit to the selected organization.</p>
-        <form method="post">
-            {% csrf_token %}
-            {{ status }}
-            {{ form }}
-            <button type="submit" name="Apply">Apply</button>
+        {% csrf_token %} {{ status }} {{ form }}
+        <button type="submit" name="Apply">Apply</button>
     </form>
-    {% endif %}
-
+    {% endif %} {% if animals is not None %}
     <h2>Search Results</h2>
+    <p> Found {{ animals|length }} animals. </p>
     <table>
         <tr>
             <th>Animal Type</th>
@@ -54,7 +48,7 @@
         </tr>
         {% endfor %}
     </table>
-
+    {% endif %}
 </body>
-    
-    {% endblock %}
+
+{% endblock %}
