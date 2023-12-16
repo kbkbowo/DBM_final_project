@@ -1,0 +1,86 @@
+<head>
+    <title>Animal Adoption</title>
+</head>
+
+<body>
+
+    <h1>Animal Adoption</h1>
+
+    <form method="GET">
+        <button>
+            <a href="../../">Back</a>
+        </button>
+    </form>
+
+    <h2>Animal Information</h2>
+    <table>
+        <tr>
+            <th>Animal ID</th>
+            <th>Animal Type</th>
+            <th>Animal Name</th>
+            <th>Animal Status</th>
+            <th>Reported Date</th>
+            <th>Reported Reason</th>
+            <th>Reported Location</th>
+            <th>Shelter Date</th>
+        </tr>
+        <tr>
+            <td>{{ animal.animal_id }}</td>
+            <td>{{ animal.animal_type }}</td>
+            <td>{{ animal.animal_name }}</td>
+            <td>{{ animal.animal_status }}</td>
+            <td>{{ animal.reported_date }}</td>
+            <td>{{ animal.reported_reason }}</td>
+            <td>{{ animal.reported_location }}</td>
+            <td>{{ animal.shelter_date }}</td>
+        </tr>
+    </table>
+
+    <h2>User Information</h2>
+    <p> Search for the user that is going to adopt this animal. </p>
+    <form method="post">
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td><label for="user_name">User Name:</label></td>
+                <td>{{ form.user_name }}</td>
+            </tr>
+            <tr>
+                <td><label for="user_email">User Email:</label></td>
+                <td>{{ form.email }}</td>
+            </tr>
+            <tr>
+                <td><label for="user_phone">User Phone:</label></td>
+                <td>{{ form.phone }}</td>
+            </tr>
+
+        </table>
+        <button type="submit" name="Search">Search</button>
+    </form>
+
+
+    <h2>Search Results</h2>
+    <p>Found {{ users|length }} results</p>
+    {% if users|length > 0 %}
+    <table>
+        <tr>
+            <th>User Name</th>
+            <th>User Email</th>
+            <th>User Phone</th>
+            <th>Select</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.user_name }}</td>
+            <td>{{ user.user_email }}</td>
+            <td>{{ user.user_phone }}</td>
+            <td>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" formaction="{{ user.user_id }}/">Select</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}

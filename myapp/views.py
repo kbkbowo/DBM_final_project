@@ -69,7 +69,7 @@ class BrowsedEvent:
 
 # SELECT a.Animal_ID, a.Animal_type, a.Animal_name, a.Animal_status, a.Reported_date, a.Reported_reason, a.Reported_location, a.Shelter_date, a.Adopt_user_ID, a.Report_user_ID
 class Animal:
-    def __init__(self, animal_id, animal_type, animal_name, animal_status, reported_date, reported_reason, reported_location, shelter_date, adopt_user_id, report_user_id):
+    def __init__(self, animal_id, animal_type, animal_name, animal_status, reported_date, reported_reason, reported_location, shelter_date, adopt_user_id, report_user_id, org_id):
         self.dict = {
             "animal_id": animal_id,
             "animal_type": animal_type,
@@ -81,6 +81,7 @@ class Animal:
             "shelter_date": shelter_date,
             "adopt_user_id": adopt_user_id,
             "report_user_id": report_user_id,
+            "org_id": org_id,
         }
         ### set attributes
         for k, v in self.dict.items():
@@ -628,7 +629,11 @@ def org_hospital_animal(request, org_id, animal_id):
     if org_id not in [org.org_id for org in parse_data(Org, get_attending_orgs(request.session['user_data'][0]))]:
         return redirect('org_home')
 
+    # check if the animal belongs to the org
     animal_info = Animal(*get_animal_info(animal_id)).dict
+    animal_org_id = animal_info.get('org_id')
+    if org_id != animal_org_id:
+        return redirect('org_animal_panel', org_id=org_id)
 
     if request.method == 'POST' and "Search" in request.POST:
         form = SelectHospitalForm(request.POST)
@@ -643,6 +648,91 @@ def org_hospital_animal(request, org_id, animal_id):
 
     return render(request, 'org_animal_hospital.html', {'animal': animal_info, 'form': SelectHospitalForm()})
 
+def org_release_animal(request, org_id, animal_id):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'animal_release'
+        return redirect('login')
+    
+    # check if the user is the member of the org
+    orgs = parse_data(Org, get_attending_orgs(request.session['user_data'][0]))
+    if org_id not in [org.org_id for org in orgs]:
+        return redirect('org_home')
+
+    animal_info = Animal(*get_animal_info(animal_id)).dict
+    animal_org_id = animal_info.get('org_id')
+    if org_id != animal_org_id:
+        return redirect('org_animal_panel', org_id=org_id)
+
+
+    if request.method == 'POST':
+        if "Release" in request.POST:
+            success = release_animal(animal_id)
+            if success: 
+                status = "Successfully released this animal."
+            else:
+                status = "Failed to release this animal."
+            return render(request, 'org_animal_release.html', {'animal': animal_info, 'status': status})
+    
+    return render(request, 'org_animal_release.html', {'animal': animal_info})
+
+def org_adopt_animal(request, org_id, animal_id):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'animal_adopt'
+        return redirect('login')
+    
+    # check if the user is the member of the org
+    orgs = parse_data(Org, get_attending_orgs(request.session['user_data'][0]))
+    if org_id not in [org.org_id for org in orgs]:
+        return redirect('org_home')
+
+    animal_info = Animal(*get_animal_info(animal_id)).dict
+    animal_org_id = animal_info.get('org_id')
+    if org_id != animal_org_id:
+        return redirect('org_animal_panel', org_id=org_id)
+
+    if request.method == 'POST':
+        if "Search" in request.POST:
+            form = QueryUsersForm(request.POST)
+            if form.is_valid():
+                form.execute_action()
+                users = parse_data(User, form.user_data)
+                ctx_dict = {
+                    "animal": animal_info,
+                    "form": form,
+                    "users": users,
+                }
+                return render(request, 'org_animal_adopt.html', ctx_dict)
+    return render(request, 'org_animal_adopt.html', {'animal': animal_info, 'form': QueryUsersForm()})
+
+def org_adopt_animal_confirm(request, org_id, animal_id, adopt_user_id):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'animal_adopt'
+        return redirect('login')
+    
+    # check if the user is the member of the org
+    orgs = parse_data(Org, get_attending_orgs(request.session['user_data'][0]))
+    if org_id not in [org.org_id for org in orgs]:
+        return redirect('org_home')
+
+    animal_info = Animal(*get_animal_info(animal_id)).dict
+    animal_org_id = animal_info.get('org_id')
+    if org_id != animal_org_id:
+        return redirect('org_animal_panel', org_id=org_id)
+
+    adopt_user_info = User(*get_user_info(adopt_user_id)).dict
+
+    if request.method == 'POST':
+        if "Confirm" in request.POST:
+            success = user_adopt_animal(animal_id, adopt_user_id)
+            if success:
+                status = "Successfully adopted this animal."
+            else:
+                status = "Failed to adopt this animal."
+            return render(request, 'org_animal_adopt_confirm.html', {'animal': animal_info, 'user': adopt_user_info, 'status': status})
+    
+    return render(request, 'org_animal_adopt_confirm.html', {'animal': animal_info, 'user': adopt_user_info})
+        
+
 def org_send_animal(request, org_id, animal_id, hospital_id):
     if request.session.get('user_data') is None:
         request.session['last_page'] = 'animal_adopt'
@@ -651,8 +741,12 @@ def org_send_animal(request, org_id, animal_id, hospital_id):
     # check if the user is the member of the org
     if org_id not in [org.org_id for org in parse_data(Org, get_attending_orgs(request.session['user_data'][0]))]:
         return redirect('org_home')
-    
+
+    # check if the animal belongs to the org
     animal_info = Animal(*get_animal_info(animal_id)).dict
+    animal_org_id = animal_info.get('org_id')
+    if org_id != animal_org_id:
+        return redirect('org_animal_panel', org_id=org_id)
 
     if request.method == 'POST':
         if 'report_reason' in request.POST:
@@ -674,9 +768,12 @@ def org_take_back_animal(request, org_id, animal_id, hospital_id, sent_date):
     if org_id not in [org.org_id for org in parse_data(Org, get_attending_orgs(request.session['user_data'][0]))]:
         print("nope")
         return redirect('org_home')
-    
-    animal_info = Animal(*get_animal_info(animal_id)).dict
 
+    # check if the animal belongs to the org
+    animal_info = Animal(*get_animal_info(animal_id)).dict
+    animal_org_id = animal_info.get('org_id')
+    if org_id != animal_org_id:
+        return redirect('org_animal_panel', org_id=org_id)
     if request.method == 'POST':
         if "Bring Back" in request.POST:
             success = take_back_animal(animal_id, hospital_id, sent_date)
@@ -781,14 +878,16 @@ def adopt_animal(request):
         return redirect('login')
 
     orgs = parse_data(Org, get_orgs())
+    my_animals = parse_data(Animal, get_user_adopted_animals(request.session['user_data'][0]))
 
     if request.method == 'POST':
         if "Search" in request.POST:
             selected_org_id = request.POST.get('org')
-            request.session['selected_org_id'] = selected_org_id
-            animals = parse_data(Animal, get_org_sheltered_animals(selected_org_id))
-            form = OrgVisitForm(request.POST)
-            return render(request, 'animal_adopt.html', {'animals': animals, 'orgs': orgs, 'selected_org_id': selected_org_id, 'form': form})
+            if selected_org_id != '':
+                request.session['selected_org_id'] = selected_org_id
+                animals = parse_data(Animal, get_org_sheltered_animals(selected_org_id))
+                form = OrgVisitForm(request.POST)
+                return render(request, 'animal_adopt.html', {'my_animals': my_animals, 'animals': animals, 'orgs': orgs, 'selected_org_id': selected_org_id, 'form': form})
         elif "Apply" in request.POST:
             form = OrgVisitForm(request.POST)
             if form.is_valid():
@@ -797,14 +896,14 @@ def adopt_animal(request):
                 user_id = request.session['user_data'][0]
                 success = form.execute_action(user_id, selected_org_id)
                 status = "Successfully applied for visit!" if success else "Failed to apply for visit. Have you entered a valid date?"
-                return render(request, 'animal_adopt.html', {'status': status, 'animals': animals, 'orgs': orgs, 'selected_org_id': selected_org_id, 'form': form})
+                return render(request, 'animal_adopt.html', {'my_animals': my_animals, 'status': status, 'animals': animals, 'orgs': orgs, 'selected_org_id': selected_org_id, 'form': form})
             else:
                 selected_org_id = request.session['selected_org_id']
                 animals = parse_data(Animal, get_org_sheltered_animals(selected_org_id))
                 user_id = request.session['user_data'][0]
                 success = form.execute_action(user_id, selected_org_id)
                 status = "Successfully applied for visit!" if success else "Failed to apply for visit. Have you entered a valid date?"
-                return render(request, 'animal_adopt.html', {'status': status, 'animals': animals, 'orgs': orgs, 'selected_org_id': selected_org_id, 'form': form})
+                return render(request, 'animal_adopt.html', {'my_animals': my_animals, 'status': status, 'animals': animals, 'orgs': orgs, 'selected_org_id': selected_org_id, 'form': form})
 
-    return render(request, 'animal_adopt.html', {'orgs': orgs})
+    return render(request, 'animal_adopt.html', {'my_animals': my_animals, 'orgs': orgs})
 

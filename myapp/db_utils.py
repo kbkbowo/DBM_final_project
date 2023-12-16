@@ -224,7 +224,7 @@ def join_event(user_id, event_id):
 def get_org_animals(org_id):
     _, cur = get_db()
     sql = f"""
-    SELECT a.Animal_ID, a.Animal_type, a.Animal_name, a.Animal_status, a.Reported_date, a.Reported_reason, a.Reported_location, a.Shelter_date, a.Adopt_user_ID, a.Report_user_ID
+    SELECT a.Animal_ID, a.Animal_type, a.Animal_name, a.Animal_status, a.Reported_date, a.Reported_reason, a.Reported_location, a.Shelter_date, a.Adopt_user_ID, a.Report_user_ID, a.Org_ID
     FROM ANIMAL AS a
     WHERE a.Org_ID = '{org_id}'
         AND a.Animal_status = 'Sheltered'
@@ -243,7 +243,7 @@ def get_org_animals(org_id):
 def get_org_sheltered_animals(org_id):
     _, cur = get_db()
     sql = f"""
-    SELECT a.Animal_ID, a.Animal_type, a.Animal_name, a.Animal_status, a.Reported_date, a.Reported_reason, a.Reported_location, a.Shelter_date, a.Adopt_user_ID, a.Report_user_ID
+    SELECT a.Animal_ID, a.Animal_type, a.Animal_name, a.Animal_status, a.Reported_date, a.Reported_reason, a.Reported_location, a.Shelter_date, a.Adopt_user_ID, a.Report_user_ID, a.Org_ID
     FROM ANIMAL AS a
     WHERE a.Org_ID = '{org_id}' AND a.Animal_status = 'Sheltered'
     ORDER BY a.Shelter_date DESC;
@@ -255,7 +255,7 @@ def get_org_sheltered_animals(org_id):
 def get_unsheltered_animals():
     _, cur = get_db()
     sql = f"""
-    SELECT a.Animal_ID, a.Animal_type, a.Animal_name, a.Animal_status, a.Reported_date, a.Reported_reason, a.Reported_location, a.Shelter_date, a.Adopt_user_ID, a.Report_user_ID
+    SELECT a.Animal_ID, a.Animal_type, a.Animal_name, a.Animal_status, a.Reported_date, a.Reported_reason, a.Reported_location, a.Shelter_date, a.Adopt_user_ID, a.Report_user_ID, a.Org_ID
     FROM ANIMAL AS a
     WHERE a.Org_ID IS NULL
     ORDER BY a.Reported_date;
@@ -278,7 +278,7 @@ def shelter_animal(org_id, animal_id):
 def get_animal_info(animal_id):
     _, cur = get_db()
     sql = f"""
-    SELECT a.Animal_ID, a.Animal_type, a.Animal_name, a.Animal_status, a.Reported_date, a.Reported_reason, a.Reported_location, a.Shelter_date, a.Adopt_user_ID, a.Report_user_ID
+    SELECT a.Animal_ID, a.Animal_type, a.Animal_name, a.Animal_status, a.Reported_date, a.Reported_reason, a.Reported_location, a.Shelter_date, a.Adopt_user_ID, a.Report_user_ID, a.Org_ID
     FROM ANIMAL AS a
     WHERE a.Animal_ID = '{animal_id}';
     """
@@ -376,6 +376,28 @@ def send_animal(org_id, animal_id, hospital_id, reason):
     return True
 
 @full_transaction
+def release_animal(animal_id):
+    _, cur = get_db()
+    sql = f"""
+    UPDATE ANIMAL
+    SET Animal_status = 'Released'
+    WHERE Animal_ID = '{animal_id}';
+    """
+    cur.execute(sql)
+    return True
+
+@full_transaction
+def user_adopt_animal(animal_id, user_id):
+    _, cur = get_db()
+    sql = f"""
+    UPDATE ANIMAL
+    SET Animal_status = 'Adopted', Adopt_user_ID = '{user_id}'
+    WHERE Animal_ID = '{animal_id}';
+    """
+    cur.execute(sql)
+    return True
+
+@full_transaction
 def take_back_animal(animal_id, hospital_id, sent_date):
     _, cur = get_db()
     # sent_date = datetime.strptime(sent_date, "%b. %d, %Y").date()
@@ -416,4 +438,26 @@ def get_org_donations(org_id):
     df = sqlio.read_sql_query(sql, conn)
     return df.to_records()
 
+def get_user_info(user_id):
+    _, cur = get_db()
+    sql = f"""
+    SELECT u.User_ID, u.User_name, u.User_email, u.User_phone_number, u.User_level
+    FROM USER_ AS u
+    WHERE u.User_ID = '{user_id}';
+    """
+    cur.execute(sql)
+    result = cur.fetchone()
+    return result
+
+def get_user_adopted_animals(user_id):
+    _, cur = get_db()
+    sql = f"""
+    SELECT a.Animal_ID, a.Animal_type, a.Animal_name, a.Animal_status, a.Reported_date, a.Reported_reason, a.Reported_location, a.Shelter_date, a.Adopt_user_ID, a.Report_user_ID, a.Org_ID
+    FROM ANIMAL AS a
+    WHERE a.Adopt_user_ID = '{user_id}'
+    ORDER BY a.Shelter_date DESC;
+    """
+    cur.execute(sql)
+    result = cur.fetchall()
+    return result
 

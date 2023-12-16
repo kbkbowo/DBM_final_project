@@ -1,0 +1,45 @@
+<head>
+    <title>Release Animal</title>
+</head>
+
+<body>
+    <h1>Release Animal</h1>
+
+    <form method="GET">
+        <button>
+            <a href="../../">Back</a>
+        </button>
+    </form>
+
+    <h2>Animal Information</h2>
+    <table>
+        <tr>
+            <th>Animal ID</th>
+            <th>Animal Type</th>
+            <th>Animal Name</th>
+            <th>Animal Status</th>
+            <th>Reported Date</th>
+            <th>Reported Reason</th>
+            <th>Reported Location</th>
+            <th>Shelter Date</th>
+        </tr>
+        <tr>
+            <td>{{ animal.animal_id }}</td>
+            <td>{{ animal.animal_type }}</td>
+            <td>{{ animal.animal_name }}</td>
+            <td>{{ animal.animal_status }}</td>
+            <td>{{ animal.reported_date }}</td>
+            <td>{{ animal.reported_reason }}</td>
+            <td>{{ animal.reported_location }}</td>
+            <td>{{ animal.shelter_date }}</td>
+        </tr>
+    </table>
+
+    <h2>Confirmation</h2>
+    <p>Are you sure you want to release this animal?</p>
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" name="Release">Yes, Release</button>
+    </form>
+    {{ status }}
+</body>

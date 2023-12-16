@@ -1,0 +1,68 @@
+<head>
+    <title>Animal Adoption</title>
+</head>
+
+<body>
+
+    <h1>Animal Adoption</h1>
+
+    <form method="GET">
+        <button>
+            <a href="../">Back</a>
+        </button>
+    </form>
+
+    <form method="GET">
+        <button>
+            <a href="../../">Animal Panel</a>
+        </button>
+    </form>
+
+    <h2>Animal Information</h2>
+    <table>
+        <tr>
+            <th>Animal ID</th>
+            <th>Animal Type</th>
+            <th>Animal Name</th>
+            <th>Animal Status</th>
+            <th>Reported Date</th>
+            <th>Reported Reason</th>
+            <th>Reported Location</th>
+            <th>Shelter Date</th>
+        </tr>
+        <tr>
+            <td>{{ animal.animal_id }}</td>
+            <td>{{ animal.animal_type }}</td>
+            <td>{{ animal.animal_name }}</td>
+            <td>{{ animal.animal_status }}</td>
+            <td>{{ animal.reported_date }}</td>
+            <td>{{ animal.reported_reason }}</td>
+            <td>{{ animal.reported_location }}</td>
+            <td>{{ animal.shelter_date }}</td>
+        </tr>
+    </table>
+
+    <h2>User Information</h2>
+    <table>
+        <tr>
+            <td><label for="user_name">User Name:</label></td>
+            <td>{{ user.user_name }}</td>
+        </tr>
+        <tr>
+            <td><label for="user_email">User Email:</label></td>
+            <td>{{ user.user_email }}</td>
+        </tr>
+        <tr>
+            <td><label for="user_phone">User Phone:</label></td>
+            <td>{{ user.user_phone }}</td>
+        </tr>
+    </table>
+
+    <h2>Adoption Confirmation</h2>
+    <p>Are you sure you want the information above is corrcet?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="Confirm">Yes, Proceed Adoption</button>
+    </form>
+    {{ status }}
+</body>

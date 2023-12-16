@@ -1,10 +1,32 @@
 {% extends 'baseHome.html' %} {% block title %} Adopt Animal {%endblock %} {%block content %} {% load widget_tweaks %}
 
 <head>
-    <title>Adopt Animal</title>
+    <title>Adoption Panel</title>
 </head>
 
-<h1>Adopt Animal</h1>
+<h1>Adoption Panel</h1>
+
+<h2>My Animals</h2>
+<p> Here shows your animals adopted on this platform. </p>
+<p> Found {{ my_animals|length }} animals. </p>
+<table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px;">
+    <!-- self, animal_id, animal_type, animal_name, animal_status, reported_date, reported_reason, reported_location, shelter_date, adopt_user_id, report_user_id -->
+    <tr>
+        <th>Animal ID</th>
+        <th>Animal Type</th>
+        <th>Animal Name</th>
+    </tr>
+    {% for animal in my_animals %}
+    <tr>
+        <td>{{ animal.animal_id }}</td>
+        <td>{{ animal.animal_type }}</td>
+        <td>{{ animal.animal_name }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<h2>Request for Organization visit</h2>
+<p> You can apply for a visit to the organization you are interested in. </p>
 <form method="post">
     {% csrf_token %}
     <p>Please select the organization to view the animals they are currently sheltering.</p>

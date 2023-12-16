@@ -1,4 +1,3 @@
-
 <head>
     <title>Animal Panel</title>
 </head>
@@ -98,6 +97,8 @@
             <th>Reported Location</th>
             <th>Shelter Date</th>
             <th>Send to Hospital</th>
+            <th>Adopt by User</th>
+            <th>Release</th>
         </tr>
         {% for animal in org_animals %}
         <tr>
@@ -113,6 +114,18 @@
                 <form method="post">
                     {% csrf_token %}
                     <button type="submit" formaction="{{ animal.animal_id }}/hospital/">Send to Hospital</button>
+                </form>
+            </td>
+            <td>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" formaction="{{ animal.animal_id }}/adopt/">Adopt</button>
+                </form>
+            </td>
+            <td>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" formaction="{{ animal.animal_id }}/release/">Release</button>
                 </form>
             </td>
         </tr>
