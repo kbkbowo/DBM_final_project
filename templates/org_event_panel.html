@@ -1,12 +1,20 @@
-<html>
+{% extends 'baseOrghome.html' %} {% block title %} Event Panel {%endblock %} 
+
+{% block navPageName %}
+    <a class="navbar-brand" href="#">Event Panel</a> 
+{% endblock %} 
+
+{% block content %}
 
 <head>
     <title>Event Panel</title>
 </head>
 
-<body>
+
+    <div class="form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto">
     <h1>Event Panel</h1>
     <p>The event panel of organization {{ org_info.org_name }}</p>
+    <div style="display: flex; justify-content: space-between;">
     <form method="post">
         {% csrf_token %}
         <button type="submit" formaction="../../">Go Back</button>
@@ -15,11 +23,12 @@
         {% csrf_token %}
         <button type="submit" formaction="create_event/">Create Event</button>
     </form>
-
+</div>
+</div> <br>
     <h2>Events list</h2>
     <p>This organization has {{ org_events|length }} events.</p>
     <!-- e.Event_ID, e.Event_date, e.Event_name, e.Capacity, e.Event_location, e.Event_description, e.Start_time, e.End_time -->
-    <table>
+    <table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px; ">
         <tr>
             <th>Event ID</th>
             <th>Event Date</th>
@@ -52,5 +61,5 @@
         </tr>
         {% endfor %}
     </table>
-</body>
-</html>
+
+{%endblock%}

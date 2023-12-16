@@ -1,12 +1,22 @@
-<html>
+{% extends 'baseOrghome.html' %} 
+{% block title %} Delete Organization {%endblock %}
+
+
+{% block navPageName %}
+    <a class="navbar-brand" href="#">Delete Organization</a>
+{% endblock %}
+
+
+{% block content%}
 <head>
     <title>Delete Organization</title>
 </head>
 
 <!-- confimation page. Just a simple button -->
-<body>
+<div class="form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto">
     <h1>Delete Organization</h1>
     <p>Are you sure you want to delete organization {{ org_info.org_name }}?</p>
+    <div style="display: flex; justify-content: space-between;">
     <form method="post">
         {% csrf_token %}
         <button type="submit" formaction="../../">No, Go Back</button>
@@ -15,4 +25,6 @@
         {% csrf_token %}
         <button type="submit" name="Delete">Yes, Delete</button>
     </form>
-</html>
+</div>
+</div>
+{%endblock%}

@@ -1,19 +1,29 @@
-<html>
+{% extends 'baseOrghome.html' %} {% block title %} Leave Organization {%endblock %} 
+
+{% block navPageName %}
+    <a class="navbar-brand" href="#">Leave Organization</a> 
+{% endblock %} 
+
+{% block content %}
+
+{% load widget_tweaks %}
+
 <head>
     <title>Leave Organization</title>
 </head>
 
 <!-- confimation page. Just a simple button -->
-<body>
+<div class = "form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto; ">
     <h1>Leave Organization</h1>
     {% if last_founder %}
-    <p>Action failed because you are the last founder of {{ org_info.org_name }}.</p>
+    <p>Action failed because you are the last founder of {{org_info.org_name |attr:"style=color: red;"  }}.</p>
     <form method="post">
         {% csrf_token %}
         <button type="submit" formaction="../../">Go Back</button>
     </form>
     {% else %}
     <p>Are you sure you want to leave organization  {{ org_info.org_name }}</p>
+    <div style="display: flex; align-items: center; justify-content: space-around;">
     <form method="post">
         {% csrf_token %}
         <button type="submit" formaction="../../">No, Go Back</button>
@@ -22,5 +32,8 @@
         {% csrf_token %}
         <button type="submit" name="Leave">Yes, Leave</button>
     </form>
+</div>
     {% endif %}
-</html>
+</div>
+
+{%endblock%}

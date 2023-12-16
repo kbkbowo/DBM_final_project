@@ -1,22 +1,31 @@
+{% extends 'baseOrghome.html' %} {% block title %} Animal Panel {%endblock %} 
+
+{% block navPageName %}
+    <a class="navbar-brand" href="#">Animal Panel</a> 
+{% endblock %} 
+
+{% block content %}
 
 <head>
     <title>Animal Panel</title>
 </head>
 
-<body>
+<div class="form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto">
     <h1>Animal Panel</h1>
 
     <form method="post">
         {% csrf_token %}
         <button type="submit" formaction="../../">Back</button>
     </form>
+</div> <br>
+
 
     <h2>Animals At Hospital</h2>
     {% if animals_at_hospital|length == 0 %}
     <p>No animals at hospital currently!</p>
     {% else %}
     <p>These animals are currently at hospital.</p>
-    <table>
+    <table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px; ">
         <!-- self, animal_id, animal_type, animal_name, animal_status, reported_date, reported_reason, reported_location, shelter_date, adopt_user_id, report_user_id -->
         <tr>
             <th>Animal ID</th>
@@ -49,13 +58,14 @@
         {% endfor %}
     </table>
     {% endif %}
+    <br>
 
     <h2>Unsheltered Animals</h2>
     {% if unsheltered_animals|length == 0 %}
     <p>No animals needs help currently!</p>
     {% else %}
     <p>These animals reported by users needs help!</p>
-    <table>
+    <table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px; ">
         <!-- self, animal_id, animal_type, animal_name, animal_status, reported_date, reported_reason, reported_location, shelter_date, adopt_user_id, report_user_id -->
         <tr>
             <th>Animal ID</th>
@@ -85,8 +95,9 @@
     </table>
     {% endif %}
 
+    <br>
     <h2>Sheltered Animals</h2>
-    <table>
+    <table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px; ">
         <!-- self, animal_id, animal_type, animal_name, animal_status, reported_date, reported_reason, reported_location, shelter_date, adopt_user_id, report_user_id -->
         <tr>
             <th>Animal ID</th>
@@ -118,4 +129,5 @@
         </tr>
         {% endfor %}
     </table>
-</body>
+
+{%endblock%}
