@@ -1,22 +1,28 @@
+{% extends 'baseOrghome.html' %} {% block title %} Visit Panel {%endblock %} 
 
+{% block navPageName %}
+    <a class="navbar-brand" href="#">Visit Panel</a> 
+{% endblock %} 
+
+{% block content %}
 <head>
     <title>Visit Panel</title>
 </head>
-
-<body>
+    <div class = "form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto; ">
     <h1>Visit Panel</h1>
 
     <form method="post">
         {% csrf_token %}
         <button type="submit" formaction="../../">Back</button>
     </form>
-
+    </div>
+    <br>
     <h2>Pending Visit Requests</h2>
     {% if pending_visits|length == 0 %}
     <p>No pending visit requests currently!</p>
     {% else %}
     <p>These users have applied for a visit to your organization.</p>
-    <table>
+    <table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px; "> 
         <!-- self, visit_id, org_id, user_id, visit_date, status, org_name -->
         <tr>
             <th>User Name</th>
@@ -46,14 +52,14 @@
             </td>
         </tr>
         {% endfor %}
-    </table>
+    </table >
     {% endif %}
-
+    <br>
     <h2>Visiting Schedules</h2>
     {% if approved_visits|length == 0 %}
     <p>You have no upcoming schedules.</p>
     {% else %}
-    <table>
+    <table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px; ">
         <tr>
             <th> User Name </th>
             <th> User Email </th>
@@ -72,5 +78,6 @@
         {% endfor %}
     </table>
     {% endif %}
-</body>
+
+{%endblock%}
 

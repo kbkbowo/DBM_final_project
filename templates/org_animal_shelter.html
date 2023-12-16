@@ -1,14 +1,24 @@
+{% extends 'baseOrghome.html' %} {% block title %} Shelter Animal {%endblock %} 
+
+{% block navPageName %}
+    <a class="navbar-brand" href="#">Shelter Animal</a> 
+{% endblock %} 
+
+{% block content %}
 
 <head>
     <title>Shelter Animal</title>
 </head>
 
-<body>
+<div class = "form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto; ">
     <h1>Shelter Animal</h1>
     {{ status }}
     <form method="GET">
-        <button>
+        <!-- <button>
             <a href="../../">Back</a>
-        </button>
+        </button> -->
+        <button type="submit" formaction="../../">Back</button>
     </form>
-</body>
+</div>
+
+{%endblock%}
