@@ -1,0 +1,22 @@
+<!-- A confimation page for evemt deletion -->
+
+<html>
+
+<head>
+    <title>Delete Event</title>
+</head>
+
+<body>
+    <h1>Delete Event</h1>
+    <p>Are you sure you want to delete event {{ event_info.event_name }}?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" formaction="../../">No, Go Back</button>
+    </form>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="Delete">Yes, Delete Event</button>
+    </form>
+</body>
+</html>

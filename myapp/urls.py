@@ -36,4 +36,5 @@ urlpatterns = [
     path('report_animal/', views.report_animal, name='report_animal'),
     path('adopt_animal/', views.adopt_animal, name='adopt_animal'),
     path('adopt_animal/<str:animal_id>', views.adopt_animal, name='adopt_animal'),
+    path('my_schedule/', views.my_schedule, name='my_schedule'),
 ]
