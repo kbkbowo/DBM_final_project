@@ -1,134 +1,142 @@
+{% extends 'baseOrghome.html' %} {% block title %} Animal Panel {%endblock %} {% block navPageName %}
+<a class="navbar-brand" href="#">Animal Panel</a> {% endblock %} {% block content %}
+
 <head>
     <title>Animal Panel</title>
 </head>
 
-<body>
+<div class="form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto">
     <h1>Animal Panel</h1>
 
     <form method="post">
         {% csrf_token %}
         <button type="submit" formaction="../../">Back</button>
     </form>
+</div> <br>
 
-    <h2>Animals At Hospital</h2>
-    {% if animals_at_hospital|length == 0 %}
-    <p>No animals at hospital currently!</p>
-    {% else %}
-    <p>These animals are currently at hospital.</p>
-    <table>
-        <!-- self, animal_id, animal_type, animal_name, animal_status, reported_date, reported_reason, reported_location, shelter_date, adopt_user_id, report_user_id -->
-        <tr>
-            <th>Animal ID</th>
-            <th>Animal Type</th>
-            <th>Animal Name</th>
-            <th>Shelter Date</th>
-            <th>Sent Date</th>
-            <th>Hospital Name</th>
-            <th>Hospital Address</th>
-            <th>Hospital Phone</th>
-            <th>Bring Back</th>
-        </tr>
-        {% for animal in animals_at_hospital %}
-        <tr>
-            <td>{{ animal.animal_id }}</td>
-            <td>{{ animal.animal_type }}</td>
-            <td>{{ animal.animal_name }}</td>
-            <td>{{ animal.shelter_date }}</td>
-            <td>{{ animal.sent_date }}</td>
-            <td>{{ animal.hospital_name }}</td>
-            <td>{{ animal.hospital_address }}</td>
-            <td>{{ animal.hospital_phone_number }}</td>
-            <td>
-                <form method="post">
-                    {% csrf_token %}
-                    <button type="submit" name="Bring Back" formaction="{{ animal.animal_id }}/hospital/{{ animal.hospital_id }}/bring_back/{{ animal.sent_date }}/">Bring Back</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% endif %}
 
-    <h2>Unsheltered Animals</h2>
-    {% if unsheltered_animals|length == 0 %}
-    <p>No animals needs help currently!</p>
-    {% else %}
-    <p>These animals reported by users needs help!</p>
-    <table>
-        <!-- self, animal_id, animal_type, animal_name, animal_status, reported_date, reported_reason, reported_location, shelter_date, adopt_user_id, report_user_id -->
-        <tr>
-            <th>Animal ID</th>
-            <th>Animal Type</th>
-            <th>Animal Name</th>
-            <th>Reported Date</th>
-            <th>Reported Reason</th>
-            <th>Reported Location</th>
-            <th>Shelter</th>
-        </tr>
-        {% for animal in unsheltered_animals %}
-        <tr>
-            <td>{{ animal.animal_id }}</td>
-            <td>{{ animal.animal_type }}</td>
-            <td>{{ animal.animal_name }}</td>
-            <td>{{ animal.reported_date }}</td>
-            <td>{{ animal.reported_reason }}</td>
-            <td>{{ animal.reported_location }}</td>
-            <td>
-                <form method="post">
-                    {% csrf_token %}
-                    <button type="submit" formaction="{{ animal.animal_id }}/shelter/">Shelter</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% endif %}
+<h2>Animals At Hospital</h2>
+{% if animals_at_hospital|length == 0 %}
+<p>No animals at hospital currently!</p>
+{% else %}
+<p>These animals are currently at hospital.</p>
+<table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px; ">
+    <!-- self, animal_id, animal_type, animal_name, animal_status, reported_date, reported_reason, reported_location, shelter_date, adopt_user_id, report_user_id -->
+    <tr>
+        <th>Animal ID</th>
+        <th>Animal Type</th>
+        <th>Animal Name</th>
+        <th>Shelter Date</th>
+        <th>Sent Date</th>
+        <th>Hospital Name</th>
+        <th>Hospital Address</th>
+        <th>Hospital Phone</th>
+        <th>Bring Back</th>
+    </tr>
+    {% for animal in animals_at_hospital %}
+    <tr>
+        <td>{{ animal.animal_id }}</td>
+        <td>{{ animal.animal_type }}</td>
+        <td>{{ animal.animal_name }}</td>
+        <td>{{ animal.shelter_date }}</td>
+        <td>{{ animal.sent_date }}</td>
+        <td>{{ animal.hospital_name }}</td>
+        <td>{{ animal.hospital_address }}</td>
+        <td>{{ animal.hospital_phone_number }}</td>
+        <td>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" name="Bring Back" formaction="{{ animal.animal_id }}/hospital/{{ animal.hospital_id }}/bring_back/{{ animal.sent_date }}/">Bring Back</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+<br>
 
-    <h2>Sheltered Animals</h2>
-    <table>
-        <!-- self, animal_id, animal_type, animal_name, animal_status, reported_date, reported_reason, reported_location, shelter_date, adopt_user_id, report_user_id -->
-        <tr>
-            <th>Animal ID</th>
-            <th>Animal Type</th>
-            <th>Animal Name</th>
-            <th>Animal Status</th>
-            <th>Reported Date</th>
-            <th>Reported Reason</th>
-            <th>Reported Location</th>
-            <th>Shelter Date</th>
-            <th>Send to Hospital</th>
-            <th>Adopt by User</th>
-            <th>Release</th>
-        </tr>
-        {% for animal in org_animals %}
-        <tr>
-            <td>{{ animal.animal_id }}</td>
-            <td>{{ animal.animal_type }}</td>
-            <td>{{ animal.animal_name }}</td>
-            <td>{{ animal.animal_status }}</td>
-            <td>{{ animal.reported_date }}</td>
-            <td>{{ animal.reported_reason }}</td>
-            <td>{{ animal.reported_location }}</td>
-            <td>{{ animal.shelter_date }}</td>
-            <td>
-                <form method="post">
-                    {% csrf_token %}
-                    <button type="submit" formaction="{{ animal.animal_id }}/hospital/">Send to Hospital</button>
-                </form>
-            </td>
-            <td>
-                <form method="post">
-                    {% csrf_token %}
-                    <button type="submit" formaction="{{ animal.animal_id }}/adopt/">Adopt</button>
-                </form>
-            </td>
-            <td>
-                <form method="post">
-                    {% csrf_token %}
-                    <button type="submit" formaction="{{ animal.animal_id }}/release/">Release</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-</body>
+<h2>Unsheltered Animals</h2>
+{% if unsheltered_animals|length == 0 %}
+<p>No animals needs help currently!</p>
+{% else %}
+<p>These animals reported by users needs help!</p>
+<table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px; ">
+    <!-- self, animal_id, animal_type, animal_name, animal_status, reported_date, reported_reason, reported_location, shelter_date, adopt_user_id, report_user_id -->
+    <tr>
+        <th>Animal ID</th>
+        <th>Animal Type</th>
+        <th>Animal Name</th>
+        <th>Reported Date</th>
+        <th>Reported Reason</th>
+        <th>Reported Location</th>
+        <th>Shelter</th>
+    </tr>
+    {% for animal in unsheltered_animals %}
+    <tr>
+        <td>{{ animal.animal_id }}</td>
+        <td>{{ animal.animal_type }}</td>
+        <td>{{ animal.animal_name }}</td>
+        <td>{{ animal.reported_date }}</td>
+        <td>{{ animal.reported_reason }}</td>
+        <td>{{ animal.reported_location }}</td>
+        <td>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" formaction="{{ animal.animal_id }}/shelter/">Shelter</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+<br>
+<h2>Sheltered Animals</h2>
+<table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px; ">
+    <!-- self, animal_id, animal_type, animal_name, animal_status, reported_date, reported_reason, reported_location, shelter_date, adopt_user_id, report_user_id -->
+    <tr>
+        <th>Animal ID</th>
+        <th>Animal Type</th>
+        <th>Animal Name</th>
+        <th>Animal Status</th>
+        <th>Reported Date</th>
+        <th>Reported Reason</th>
+        <th>Reported Location</th>
+        <th>Shelter Date</th>
+        <th>Send to Hospital</th>
+        <th>Adopt by User</th>
+        <th>Release</th>
+    </tr>
+    {% for animal in org_animals %}
+    <tr>
+        <td>{{ animal.animal_id }}</td>
+        <td>{{ animal.animal_type }}</td>
+        <td>{{ animal.animal_name }}</td>
+        <td>{{ animal.animal_status }}</td>
+        <td>{{ animal.reported_date }}</td>
+        <td>{{ animal.reported_reason }}</td>
+        <td>{{ animal.reported_location }}</td>
+        <td>{{ animal.shelter_date }}</td>
+        <td>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" formaction="{{ animal.animal_id }}/hospital/">Send to Hospital</button>
+            </form>
+        </td>
+        <td>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" formaction="{{ animal.animal_id }}/adopt/">Adopt</button>
+            </form>
+        </td>
+        <td>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" formaction="{{ animal.animal_id }}/release/">Release</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+{%endblock%}

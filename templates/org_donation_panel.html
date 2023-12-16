@@ -1,17 +1,28 @@
+{% extends 'baseOrghome.html' %} {% block title %} Record Donation {%endblock %} 
+
+{% block navPageName %}
+    <a class="navbar-brand" href="#">Record Donation</a> 
+{% endblock %} 
+
+{% block content %}
+
 <head>
     <title>Record Donation</title>
 </head>
 
-<body>
+<div class = "form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto; ">
 
     <h1>Record Donation</h1>
 
     <form method="GET">
-        <button>
+        <!-- <button>
             <a href="../../">Back</a>
-        </button>
+        </button> -->
+        <button type="submit" formaction="../../">Back</button>
     </form>
-
+</div>
+<br><br>
+<div class = "form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto; ">
     <form method="POST">
         {% csrf_token %}
         <h2>Add Donation</h2>
@@ -35,11 +46,13 @@
         </table>
         <button type="submit" name="Submit">Submit</button>
     </form>
+</div> <br>
+
 
     <h2>Donations</h2>
     <p> Your organization have {{ donations|length }} donations! </p>
 
-    <table>
+    <table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px; ">
         <tr>
             <th>Donor Name</th>
             <th>Item Category</th>
@@ -61,4 +74,6 @@
         </tr>
         {% endfor %}
     </table>
-</body>
+
+
+{%endblock%}

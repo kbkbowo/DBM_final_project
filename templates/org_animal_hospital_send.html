@@ -1,20 +1,35 @@
+{% extends 'baseOrghome.html' %} {% block title %} Send Animal To Hospital Send{%endblock %} 
+
+{% block navPageName %}
+    <a class="navbar-brand" href="#">Send Animal To Hospital Send</a> 
+{% endblock %} 
+
+{% block content %}
+
 <head>
     <title>Send Animal To Hospital</title>
 </head>
 
-<body>
+<div class="form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto">
     <h1>Send Animal To Hospital</h1>
     {{ status }}
 
-    <form method="GET">
+    <!-- <form method="GET">
         <button>
             <a href="../../">Back</a>
         </button>
-    </form>
+    </form> -->
+    <!-- <form method="post">
+        {% csrf_token %}
+        <button type="submit" formaction="../../">Back</button>
+    </form> -->
 
+    <br>
     <form method="POST">
         {% csrf_token %}
-        <h2>Fill in Description</h2>
+        <!-- <h2>Fill in Description</h2> -->
+        
+        <div style="display: flex; align-items: center; justify-content: space-around;">
         <table>
             <tr>
                 <td><label for="report_reason">Description</label></td>
@@ -22,5 +37,12 @@
             </tr>
         </table>
         <button type="submit">Submit</button>
+    
     </form>
-</body>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" formaction="../../">Back</button>
+    </form>
+</div>
+</div>
+{%endblock%}
