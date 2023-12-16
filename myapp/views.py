@@ -190,6 +190,7 @@ def signup(request):
     if request.method == 'POST':
         form = SignupForm(request.POST)
         if form.is_valid():
+            form.execute_action()
             request.session['user_data'] = form.user_data
             return redirect(request.session.get('last_page', 'home'))
         else:
