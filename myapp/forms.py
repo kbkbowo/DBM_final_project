@@ -119,11 +119,52 @@ class QueryUsersForm(forms.Form):
             AND u.User_email LIKE '%{email}%' 
             AND u.User_level LIKE '%{level}%';
         """
-        # check if exists
         cur.execute(sql)
         result = cur.fetchall()
         self.user_data = result
         return True
+
+    def execute_action_details(self):
+        conn, cur = get_db()
+        user_id = self.cleaned_data['user_id']
+        user_name = self.cleaned_data['user_name']
+        phone = self.cleaned_data['phone']
+        email = self.cleaned_data['email']
+        level = self.cleaned_data['level']
+        # get the count of joined_orgs, founded_orgs, past_events, upcoming_events, reported_animals, adopted_animals, donated_items
+        sql = f"""
+        WITH SELECTED_USERS AS (
+            SELECT u.User_ID, u.User_name, u.User_phone_number, u.User_email, u.User_level
+            FROM USER_ AS u
+            WHERE u.User_id LIKE '%{user_id}%'
+                AND u.User_name LIKE '%{user_name}%'
+                AND u.User_phone_number LIKE '%{phone}%'
+                AND u.User_email LIKE '%{email}%'
+                AND u.User_level LIKE '%{level}%'
+        )
+
+        SELECT su.User_ID, su.User_name, su.User_phone_number as User_phone, su.User_email, su.User_level, 
+            COUNT(DISTINCT j.Org_ID) AS joined_orgs,
+            COUNT(DISTINCT b.Org_ID) AS founded_orgs,
+            COUNT(DISTINCT e.Event_ID) AS past_events,
+            COUNT(DISTINCT e2.Event_ID) AS upcoming_events,
+            COUNT(DISTINCT a.Animal_ID) AS reported_animals,
+            COUNT(DISTINCT a2.Animal_ID) AS adopted_animals,
+            COUNT(DISTINCT d.Donor_ID) AS donations
+        FROM SELECTED_USERS AS su
+            LEFT JOIN JOIN_ AS j ON su.User_ID = j.User_ID
+            LEFT JOIN BUILD AS b ON su.User_ID = b.Founder_ID
+            LEFT JOIN HOLD AS h ON b.Org_ID = h.Org_ID
+            LEFT JOIN EVENT AS e ON h.Event_ID = e.Event_ID AND e.Event_date < CURRENT_DATE
+            LEFT JOIN EVENT AS e2 ON h.Event_ID = e2.Event_ID AND e2.Event_date >= CURRENT_DATE
+            LEFT JOIN ANIMAL AS a ON su.User_ID = a.Report_user_id
+            LEFT JOIN ANIMAL AS a2 ON su.User_ID = a2.Adopt_user_id
+            LEFT JOIN DONATE AS d ON su.User_ID = d.Donor_ID
+        GROUP BY su.User_ID, su.User_name, su.User_phone_number, su.User_email, su.User_level;
+        """
+        db = sqlio.read_sql_query(sql, conn)
+        return db.to_records()
+
         
 class ManageUserForm(forms.Form):
     action_choices = forms.ChoiceField(choices=[('promote', 'Promote (Make Admin)'), ('demote', 'Demote (Make User)'), ('delete', 'Delete Account')], required=False)

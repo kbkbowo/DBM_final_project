@@ -1,11 +1,6 @@
-{% extends 'baseHome.html' %} 
-{% block title %} Home {%endblock %}
+{% extends 'baseHome.html' %} {% block title %} Home {%endblock %} {% block navPageName %}
+<a class="navbar-brand" href="#">Report Animal</a> {% endblock %} {%block content %}
 
-{% block navPageName %}
-    <a class="navbar-brand" href="#">Report Animal</a>
-{% endblock %}
-
-{%block content %}
 <head>
     <title>Report Animal</title>
 </head>
@@ -15,9 +10,8 @@
 <div class="form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto">
     <h1>Report Animal</h1>
     <form method="post">
-        {% csrf_token %}
-        {{ status }}
-        <table style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px; " >
+        {% csrf_token %} {{ status }}
+        <table style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px; ">
             <tr>
                 <td>Animal Type:</td>
                 <td>{{ form.animal_type }}</td>
@@ -41,5 +35,33 @@
         </table>
     </form>
 </div>
-    
-{% endblock%}   
+
+<br> <br>
+<h2>Reported Animals</h2>
+<p> You have reported {{ reported_animals|length }} animals. </p>
+{% if reported_animals|length > 0 %}
+<table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px;">
+    <tr>
+        <th>Animal ID</th>
+        <th>Animal Type</th>
+        <th>Animal Name</th>
+        <th>Animal Status</th>
+        <th>Reported Date</th>
+        <th>Reported Situation</th>
+        <th>Reported Location</th>
+        <th>Shelter Date</th>
+    </tr>
+    {% for animal in reported_animals %}
+    <tr>
+        <td>{{ animal.animal_id }}</td>
+        <td>{{ animal.animal_type }}</td>
+        <td>{{ animal.animal_name }}</td>
+        <td>{{ animal.animal_status }}</td>
+        <td>{{ animal.reported_date }}</td>
+        <td>{{ animal.reported_reason }}</td>
+        <td>{{ animal.reported_location }}</td>
+        <td>{{ animal.shelter_date }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %} {% endblock%}

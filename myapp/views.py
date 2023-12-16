@@ -136,7 +136,6 @@ def my_schedule(request):
 
     return render(request, 'my_schedule.html', {'visits':user_schedules})
 
-
 def logout(request):
     request.session.flush()
     return redirect('login')
@@ -214,8 +213,17 @@ def manage_users(request):
                 form = QueryUsersForm(None, initial=request.session['last_form'], prefix='Search')
                 form.cleaned_data = request.session['last_form']
 
-            form.execute_action()
-            users = parse_data(User, form.user_data)
+            details = request.session.get('manage_user_details', False)
+            if "Toggle Details" in request.POST:
+                details = not details
+                request.session['manage_user_details'] = details
+
+            if details:
+                users = form.execute_action_details()
+            else:
+                form.execute_action()
+                users = parse_data(User, form.user_data)
+                
 
             action_form = _get_form(request, ManageUserForm, 'Confirm_action')
             if action_form.is_valid():
@@ -235,6 +243,7 @@ def manage_users(request):
                 "form": form,
                 "users": users,
                 "len_users": len(users),
+                "show_details": details,
             }
 
             if (len(users) == 1) and (users[0].user_id != request.session['user_data'][0]):
@@ -244,6 +253,13 @@ def manage_users(request):
             return render(request, 'manage_users.html', ctx_dict)        
     request.session['last_page'] = 'manage_users'
     return render(request, 'manage_users.html', {'form': QueryUsersForm(prefix='Search')})
+
+def manage_orgs(request):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'manage_users'
+        return redirect('login')
+    if request.session['user_data'][4] != 'Admin':
+        return redirect('home')
 
 def org_home(request):
     if request.session.get('user_data') is None:
@@ -861,16 +877,19 @@ def report_animal(request):
         request.session['last_page'] = 'report_animal'
         return redirect('login')
 
-    if request.method == 'POST' and "Submit" in request.POST:
-            form = ReportAnimalForm(request.POST)
-            if form.is_valid():
-                user_id = request.session['user_data'][0]
-                result = form.execute_action(user_id=user_id)
-                return render(request, 'animal_report.html', {'form': form, 'status': 'Successfully reported.'})
-            else:
-                return render(request, 'animal_report.html', {'form': form, 'status': 'Invalid inputs.'})
+    user_id = request.session['user_data'][0]
+    reported_animals = parse_data(Animal, get_user_reported_animals(user_id))
 
-    return render(request, 'animal_report.html', {'form': ReportAnimalForm()})
+    if request.method == 'POST' and "Submit" in request.POST:
+        form = ReportAnimalForm(request.POST)
+        if form.is_valid():
+            
+            result = form.execute_action(user_id=user_id)
+            return render(request, 'animal_report.html', {'form': form, 'status': 'Successfully reported.', 'reported_animals': reported_animals})
+        else:
+            return render(request, 'animal_report.html', {'form': form, 'status': 'Invalid inputs.', 'reported_animals': reported_animals})
+
+    return render(request, 'animal_report.html', {'form': ReportAnimalForm(), 'reported_animals': reported_animals})
 
 def adopt_animal(request):
     if request.session.get('user_data') is None:

@@ -1,12 +1,6 @@
 <!-- display login successful message -->
-{% extends 'baseHome.html' %} 
-{% block title %} Home {%endblock %}
-
-{% block navPageName %}
-    <a class="navbar-brand" href="#">Home</a>
-{% endblock %}
-
-{%block content %}
+{% extends 'baseHome.html' %} {% block title %} Home {%endblock %} {% block navPageName %}
+<a class="navbar-brand" href="#">Home</a> {% endblock %} {%block content %}
 
 
 
@@ -28,7 +22,7 @@
         <button type="submit" formaction="profile/">Profile</button>
     </form> -->
     <div class="wrapper" style="width: 1000px; margin: 0 auto">
-        <div class="box1" style="width: 400px; float: left; background-color: beige;" >
+        <div class="box1" style="width: 400px; float: left; background-color: beige;">
             <h2 style="color:rgb(0, 0, 0)">User Mode</h2>
             <form method="post">
                 {% csrf_token %}
@@ -66,7 +60,7 @@
                 {% endfor %}
             </table>
             {% endif %} -->
-            
+
         </div>
         <div class="box2" style="width: 400px; float: right;background-color: rgb(234, 153, 129);">
             {% if user_level == "Admin" %}
@@ -75,10 +69,14 @@
                 {% csrf_token %}
                 <button type="submit" name="redirect_manage_users">Manage Users</button>
             </form>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" formaction="manage_orgs">Manage Organizations</button>
+            </form>
             {% endif %}
         </div>
     </div>
-    
+
 
 </body>
 

@@ -461,3 +461,17 @@ def get_user_adopted_animals(user_id):
     result = cur.fetchall()
     return result
 
+def get_user_reported_animals(user_id):
+    _, cur = get_db()
+    sql = f"""
+    SELECT a.Animal_ID, a.Animal_type, a.Animal_name, a.Animal_status, a.Reported_date, a.Reported_reason, a.Reported_location, a.Shelter_date, a.Adopt_user_ID, a.Report_user_ID, a.Org_ID
+    FROM ANIMAL AS a
+    WHERE a.Report_user_ID = '{user_id}'
+    ORDER BY a.Shelter_date DESC;
+    """
+    cur.execute(sql)
+    result = cur.fetchall()
+    return result
+
+
+

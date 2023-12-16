@@ -1,11 +1,12 @@
 <html>
+
 <head>
     <title>Create Event</title>
 </head>
 
 <body>
     <h1>Create Event</h1>
-    <p>Create an event as organization {{ org_info.org_name }}</p>
+    <p>Create an event as organization {{ org_info.org_name }}. If the event is co-organized by multiple organizations, they also have to come to this page and fill in this form. </p>
     <form method="post">
         {% csrf_token %}
         <button type="submit" formaction="../../">Go Back</button>
@@ -46,6 +47,6 @@
         <button type="submit" name="create_event">Create Event</button>
 
     </form>
-    {{ status}}
-    {{ form.errors }}
+    {{ status}} {{ form.errors }}
+
 </html>
