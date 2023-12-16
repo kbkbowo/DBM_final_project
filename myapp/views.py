@@ -119,9 +119,22 @@ def home(request):
             request.session['last_page'] = 'home'
             return redirect('manage_users')
         
-    user_schedules = get_user_schedules(request.session['user_data'][0])
+    # user_schedules = get_user_schedules(request.session['user_data'][0])
         
-    return render(request, 'home.html', {'user_id':request.session['user_data'][0], 'user_name': request.session['user_data'][1], 'user_level': request.session['user_data'][4], 'visits': user_schedules})
+    # return render(request, 'home.html', {'user_id':request.session['user_data'][0], 'user_name': request.session['user_data'][1], 'user_level': request.session['user_data'][4], 'visits': user_schedules})
+        
+    return render(request, 'home.html', {'user_id':request.session['user_data'][0], 'user_name': request.session['user_data'][1], 'user_level': request.session['user_data'][4]})
+
+def my_schedule(request):
+    # redirect to login page if not logged in
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'home'
+        return redirect('login')
+    
+    user_schedules = get_user_schedules(request.session['user_data'][0])
+
+    return render(request, 'my_schedule.html', {'visits':user_schedules})
+
 
 def logout(request):
     request.session.flush()
