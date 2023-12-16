@@ -1,0 +1,33 @@
+{% extends 'baseEvent.html' %} {% block title %} Home {%endblock %} {% block navPageName %}
+<a class="navbar-brand" href="#">Join Event</a> {% endblock %} {%block content %}
+
+<head>
+    <title>Join Event</title>
+</head>
+
+<!-- <h1>Join Event</h1> -->
+<div class="form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto">
+    {% if not success %}
+    <p>Are you sure you want to quit this event?</p>
+    <table>
+        <tr>
+
+            <td>
+                <form mehtod="get"><button type="submit" formaction="../../">No. go back</button></form>
+            </td>
+
+            <td>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" name="Quit">Yes, Quit</button>
+                </form>
+            </td>
+
+        </tr>
+    </table>
+    {% else %} {{ status }}
+    <form mehtod="get"><button type="submit" formaction="../../">Go back</button></form>
+    {% endif %}
+</div>
+
+{%endblock%}

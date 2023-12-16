@@ -1,35 +1,46 @@
-{% extends 'baseSchedule.html' %} 
-{% block title %} My_shedule {%endblock %}
+{% extends 'baseSchedule.html' %} {% block title %} My_shedule {%endblock %} {% block navPageName %}
+<a class="navbar-brand" href="#">My shedule</a> {% endblock %} {%block content %}
 
-
-{% block navPageName %}
-    <a class="navbar-brand" href="#">My shedule</a>
-{% endblock %}
-
-
-
-
-{%block content %}
 <head>
     <title>My schedule</title>
 </head>
-    <h3>My schedule</h3>
-    {% if visits|length == 0 %}
-    <p>You have no upcoming schedules.</p>
-    {% else %}
-    <table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px;">
-        <tr>
-            <th> Organization Name </th>
-            <th> Visit Date </th>
-            <th> Status </th>
-        </tr>
-        {% for visit in visits %}
-        <tr>
-            <td> {{ visit.org_name }}&emsp; </td>
-            <td> {{ visit.visit_date }}&emsp; </td>
-            <td> {{ visit.status }}&emsp; </td>
-        </tr>
-        {% endfor %}
-    </table>
+<h1>My schedule</h1>
+<h3>Visits</h3>
+{% if visits|length == 0 %}
+<p>You have no upcoming schedules.</p>
+{% else %}
+<table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px;">
+    <tr>
+        <th> Organization Name </th>
+        <th> Visit Date </th>
+        <th> Status </th>
+    </tr>
+    {% for visit in visits %}
+    <tr>
+        <td> {{ visit.org_name }}&emsp; </td>
+        <td> {{ visit.visit_date }}&emsp; </td>
+        <td> {{ visit.status }}&emsp; </td>
+    </tr>
+    {% endfor %}
+</table>
 {% endif %}
-{% endblock %}
+
+<h3>Events</h3>
+{% if events|length == 0 %}
+<p>You have no upcoming events.</p>
+{% else %}
+<table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px;">
+    <tr>
+        <th> Event Name </th>
+        <th> Event Date </th>
+        <th> Event Location </th>
+    </tr>
+    {% for event in events %}
+    <tr>
+        <td> {{ event.event_name }}&emsp; </td>
+        <td> {{ event.event_date }}&emsp; </td>
+        <td> {{ event.event_location }}&emsp; </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %} {% endblock %}

@@ -123,7 +123,7 @@ def home(request):
     # user_schedules = get_user_schedules(request.session['user_data'][0])
         
     # return render(request, 'home.html', {'user_id':request.session['user_data'][0], 'user_name': request.session['user_data'][1], 'user_level': request.session['user_data'][4], 'visits': user_schedules})
-        
+    request.session['last_page'] = 'manage_orgs'
     return render(request, 'home.html', {'user_id':request.session['user_data'][0], 'user_name': request.session['user_data'][1], 'user_level': request.session['user_data'][4]})
 
 def my_schedule(request):
@@ -132,9 +132,10 @@ def my_schedule(request):
         request.session['last_page'] = 'home'
         return redirect('login')
     
-    user_schedules = get_user_schedules(request.session['user_data'][0])
+    user_visits = get_user_visits(request.session['user_data'][0])
+    user_events = parse_data(Event, get_user_events(request.session['user_data'][0]))
 
-    return render(request, 'my_schedule.html', {'visits':user_schedules})
+    return render(request, 'my_schedule.html', {'visits':user_visits, 'events':user_events})
 
 def logout(request):
     request.session.flush()
@@ -261,6 +262,144 @@ def manage_orgs(request):
     if request.session['user_data'][4] != 'Admin':
         return redirect('home')
 
+    if request.method == 'POST':
+        if request.session['last_page'] == 'manage_orgs':
+            form = ManageOrgsForm(request.POST, prefix='Search')
+            if form.is_valid():
+                request.session['last_form'] = form.cleaned_data
+            else:
+                # recover the last form
+                form = QueryOrgsForm(None, initial=request.session['last_form'])
+                form.cleaned_data = request.session['last_form']
+            
+            details = request.session.get('manage_org_details', False)
+            if "Toggle Details" in request.POST:
+                details = not details
+                request.session['manage_org_details'] = details
+            
+            if details:
+                orgs = form.query_search_detailed()
+            else:
+                orgs = form.query_search()
+            # print(orgs[:10])
+            ctx_dict = {
+                "form": form,
+                "orgs": orgs,
+                "details": details,
+            }
+            if len(orgs) == 1:
+                ctx_dict["selected_org"] = orgs[0]
+            return render(request, 'manage_orgs.html', ctx_dict)
+
+
+    request.session['last_page'] = 'manage_orgs'
+    return render(request, 'manage_orgs.html', {'form': ManageOrgsForm(prefix='Search')})
+
+def manage_hospital(request):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'manage_users'
+        return redirect('login')
+    if request.session['user_data'][4] != 'Admin':
+        return redirect('home')
+
+    if request.method == 'POST':
+        if request.session['last_page'] == 'manage_hospital':
+            form = QueryHospitalForm(request.POST, prefix='Search')
+            if form.is_valid():
+                request.session['last_form'] = form.cleaned_data
+            else:
+                # recover the last form
+                form = QueryHospitalForm(None, initial=request.session['last_form'])
+                form.cleaned_data = request.session['last_form']
+            
+            details = request.session.get('manage_hospital_details', False)
+            if "Toggle Details" in request.POST:
+                details = not details
+                request.session['manage_hospital_details'] = details
+            
+            if details:
+                hospitals = form.query_search_detailed()
+            else:
+                hospitals = form.query_search()
+
+            ctx_dict = {
+                "form": form,
+                "hospitals": hospitals,
+                "details": details,
+            }
+            if len(hospitals) == 1:
+                ctx_dict["selected_hospital"] = hospitals[0]
+            return render(request, 'manage_hospital.html', ctx_dict)
+    
+    request.session['last_page'] = 'manage_hospital'
+    return render(request, 'manage_hospital.html', {'form': QueryHospitalForm(prefix='Search')})
+
+def hospital_add(request):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'manage_users'
+        return redirect('login')
+    if request.session['user_data'][4] != 'Admin':
+        return redirect('home')
+
+    if request.method == 'POST':
+        form = AddHospitalForm(request.POST)
+        if form.is_valid():
+            form.execute_action()
+            return redirect('manage_hospital')
+        else:
+            return render(request, 'hospital_add.html', {'form': form, 'status': 'Invalid inputs.'})
+        
+    return render(request, 'hospital_add.html', {'form': AddHospitalForm()})
+
+def hospital_delete(request, hospital_id):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'manage_users'
+        return redirect('login')
+    if request.session['user_data'][4] != 'Admin':
+        return redirect('home')
+    
+    if request.method == 'POST':
+        if "Delete" in request.POST:
+            delete_hospital(hospital_id)
+            return redirect('manage_hospital')
+
+    hospital_info = get_hospital_info(hospital_id)[0]
+    return render(request, 'hospital_delete.html', {"hospital": hospital_info})
+
+def hospital_edit(request, hospital_id):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'manage_users'
+        return redirect('login')
+    if request.session['user_data'][4] != 'Admin':
+        return redirect('home')
+    
+    hospital_info = get_hospital_info(hospital_id)[0]
+    init_dict = {
+        "hospital_name": hospital_info["hospital_name"],
+        "hospital_address": hospital_info["hospital_address"],
+        "hospital_phone": hospital_info["hospital_phone_number"],
+    }
+
+    if request.method == 'POST':
+        form = AddHospitalForm(request.POST)
+        if form.is_valid():
+            hospital_name = form.cleaned_data['hospital_name']
+            hospital_address = form.cleaned_data['hospital_address']
+            hospital_phone = form.cleaned_data['hospital_phone']
+            success = edit_hospital(hospital_id, hospital_name, hospital_address, hospital_phone)
+            if success:
+                return redirect('manage_hospital')
+        
+            return render(request, 'hospital_edit.html', {'form': form, 'status': 'Invalid inputs.'})
+
+        form = AddHospitalForm(initial=init_dict)
+        form.cleaned_data = hospital_info
+        return render(request, 'hospital_edit.html', {'form': form})
+        
+    form = AddHospitalForm(initial=init_dict)
+    form.cleaned_data = hospital_info
+    return render(request, 'hospital_edit.html', {'form': form})
+
 def org_home(request):
     if request.session.get('user_data') is None:
         request.session['last_page'] = 'org_home'
@@ -320,19 +459,20 @@ def org_edit_info(request, org_id=-1):
         request.session['last_page'] = 'org_edit'
         return redirect('login')
     # validate user's ownership of the org
-    if request.session.get('ownership') is None:
-        request.session['ownership'] = []
-    
-    if org_id not in request.session['ownership']:
-        ownership = validate_org_owner({'user_id': request.session['user_data'][0], 'org_id': org_id})
-        if not ownership:
-            return redirect('org_home')
-        else: 
-            request.session['ownership'].append(org_id)
-            request.session.modified = True
-    
+    if request.session['user_data'][4] != 'Admin':
+        if request.session.get('ownership') is None:
+            request.session['ownership'] = []
+        
+        if org_id not in request.session['ownership']:
+            ownership = validate_org_owner({'user_id': request.session['user_data'][0], 'org_id': org_id})
+            if not ownership:
+                return redirect('org_home')
+            else: 
+                request.session['ownership'].append(org_id)
+                request.session.modified = True
+
     org_info = Org(*get_org_info(org_id)).dict
-    if request.method == 'POST':
+    if request.method == 'POST' and "Edit" in request.POST:
         form = BuildOrgForm(request.POST)
         if form.is_valid():
             user_id = request.session['user_data'][0]
@@ -350,23 +490,24 @@ def org_edit_founder(request, org_id=-1):
         request.session['last_page'] = 'org_add_founder'
         return redirect('login')
     # validate user's ownership of the org
-    if request.session.get('ownership') is None:
-        request.session['ownership'] = []
-    
-    if org_id not in request.session['ownership']:
-        ownership = validate_org_owner({'user_id': request.session['user_data'][0], 'org_id': org_id})
-        if not ownership:
-            return redirect('org_home')
-        else: 
-            request.session['ownership'].append(org_id)
-            request.session.modified = True
+    if request.session['user_data'][4] != 'Admin':
+        if request.session.get('ownership') is None:
+            request.session['ownership'] = []
+        
+        if org_id not in request.session['ownership']:
+            ownership = validate_org_owner({'user_id': request.session['user_data'][0], 'org_id': org_id})
+            if not ownership:
+                return redirect('org_home')
+            else: 
+                request.session['ownership'].append(org_id)
+                request.session.modified = True
     
     print("founders:", get_org_founders(org_id))
     selected_self = False
     
     if request.method == 'POST':
         form = ManageFounderForm(request.POST)
-        if form.is_valid():
+        if form.is_valid() and ("Search" in request.POST or "Confirm_action" in request.POST):
             if "Search" in request.POST:
                 form.query_search(org_id=org_id)
                 if form.selected_user[0] == request.session['user_data'][0]:
@@ -400,22 +541,23 @@ def org_delete(request, org_id=-1):
         request.session['last_page'] = 'org_delete'
         return redirect('login')
     # validate user's ownership of the org
-    if request.session.get('ownership') is None:
-        request.session['ownership'] = []
-    
-    if org_id not in request.session['ownership']:
-        ownership = validate_org_owner({'user_id': request.session['user_data'][0], 'org_id': org_id})
-        if not ownership:
-            return redirect('org_home')
-        else: 
-            request.session['ownership'].append(org_id)
-            request.session.modified = True
+    if request.session['user_data'][4] != 'Admin':
+        if request.session.get('ownership') is None:
+            request.session['ownership'] = []
+        
+        if org_id not in request.session['ownership']:
+            ownership = validate_org_owner({'user_id': request.session['user_data'][0], 'org_id': org_id})
+            if not ownership:
+                return redirect('org_home')
+            else: 
+                request.session['ownership'].append(org_id)
+                request.session.modified = True
 
     if request.method == 'POST':
         if "Delete" in request.POST:
             delete_org(org_id)
             return redirect('org_home')
-    
+
     org_info = Org(*get_org_info(org_id)).dict
     return render(request, 'org_delete.html', {"org_info": org_info})
 
@@ -596,8 +738,6 @@ def org_visit_panel(request, org_id=-1):
     approved_visits = get_org_approved_visits(org_id)
     rejected_visits = get_org_rejected_visits(org_id)
 
-    print(len(pending_visits), len(approved_visits), len(rejected_visits))
-
     ctx_dict = {
         "org_info": Org(*get_org_info(org_id)).dict,
         "pending_visits": pending_visits,
@@ -748,7 +888,6 @@ def org_adopt_animal_confirm(request, org_id, animal_id, adopt_user_id):
     
     return render(request, 'org_animal_adopt_confirm.html', {'animal': animal_info, 'user': adopt_user_info})
         
-
 def org_send_animal(request, org_id, animal_id, hospital_id):
     if request.session.get('user_data') is None:
         request.session['last_page'] = 'animal_adopt'
@@ -872,6 +1011,23 @@ def event_join(request, event_id=-1):
     
     return render(request, 'event_join.html', {"status": status})
 
+def event_quit(request, event_id=-1):
+    if request.session.get('user_data') is None:
+        request.session['last_page'] = 'event_quit'
+        return redirect('login')
+    
+    user_id = request.session['user_data'][0]
+    if request.method == 'POST' and "Quit" in request.POST:
+        success = quit_event(user_id, event_id)
+        if success:
+            status = "Successfully quit this event."
+        else:
+            status = "Something went wrong. Failed to quit this event."
+    
+        return render(request, 'event_quit.html', {"status": status, "success": success})
+    else:
+        return render(request, 'event_quit.html')
+
 def report_animal(request):
     if request.session.get('user_data') is None:
         request.session['last_page'] = 'report_animal'
@@ -925,4 +1081,3 @@ def adopt_animal(request):
                 return render(request, 'animal_adopt.html', {'my_animals': my_animals, 'status': status, 'animals': animals, 'orgs': orgs, 'selected_org_id': selected_org_id, 'form': form})
 
     return render(request, 'animal_adopt.html', {'my_animals': my_animals, 'orgs': orgs})
-

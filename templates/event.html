@@ -1,41 +1,41 @@
-{% extends 'baseHome.html' %} 
-{% block title %} Home {%endblock %}
-
-{% block navPageName %}
-    <a class="navbar-brand" href="#">Events</a>
-{% endblock %}
-
-{%block content %}
+{% extends 'baseHome.html' %} {% block title %} Home {%endblock %} {% block navPageName %}
+<a class="navbar-brand" href="#">Events</a> {% endblock %} {%block content %}
 
 <head>
     <title>Events</title>
 </head>
 
 
-    <!-- <h1>Events</h1> -->
-    <style>
-        form label {
-            display: inline-block;
-            width: 80px; 
-            text-align: right; 
-        }
-        form input {
-            width: 150px; /* Set the width of the input fields as needed */
-            margin-bottom: 5px; /* Add margin at the bottom of input fields for spacing */
-        }
-        .form-container {
-            background-color: rgb(94, 94, 100);
-            padding: 20px;
-            border-radius: 10px;
-            color: white;
-            width: fit-content;  /* 使容器大小适应内容宽度 */
-            margin: 0 auto;     /* 水平居中 */
-            }
-        </style>
+<!-- <h1>Events</h1> -->
+<style>
+    form label {
+        display: inline-block;
+        width: 80px;
+        text-align: right;
+    }
     
-    <div class="form-container">
+    form input {
+        width: 150px;
+        /* Set the width of the input fields as needed */
+        margin-bottom: 5px;
+        /* Add margin at the bottom of input fields for spacing */
+    }
+    
+    .form-container {
+        background-color: rgb(94, 94, 100);
+        padding: 20px;
+        border-radius: 10px;
+        color: white;
+        width: fit-content;
+        /* 使容器大小适应内容宽度 */
+        margin: 0 auto;
+        /* 水平居中 */
+    }
+</style>
+
+<div class="form-container">
     <p>Welcome! This is your event overview page!</p>
-    
+
     <!-- <form method="post">
         {% csrf_token %}
         <button type="submit" formaction="../">Home</button>
@@ -44,38 +44,39 @@
         {% csrf_token %}
         <button type="submit" formaction="../event_browse/">Browse/Join Events</button>
     </form>
-    </div>
-    <br> <br>
-    
-    {% if events|length > 0 %}
-    <h2>My Events</h2>
-    <!-- # e.Event_ID, e.Event_date, e.Event_name, e.Capacity, e.Event_location, e.Event_description, e.Start_time, e.End_time -->
-    <table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px;">
-        <tr>
-            <th>Event ID</th>
-            <th>Event Date</th>
-            <th>Event Name</th>
-            <th>Capacity</th>
-            <th>Event Location</th>
-            <th>Event Description</th>
-            <th>Start Time</th>
-            <th>End Time</th>
-        </tr>
-        {% for e in events %}
-        <tr>
-            <td>{{ e.event_id }}</td>
-            <td>{{ e.event_date }}</td>
-            <td>{{ e.event_name }}</td>
-            <td>{{ e.capacity }}</td>
-            <td>{{ e.event_location }}</td>
-            <td>{{ e.event_description }}</td>
-            <td>{{ e.start_time }}</td>
-            <td>{{ e.end_time }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% endif %}
-{% endblock %}
-
-    
-    
+</div>
+<br> <br> {% if events|length > 0 %}
+<h2>My Events</h2>
+<!-- # e.Event_ID, e.Event_date, e.Event_name, e.Capacity, e.Event_location, e.Event_description, e.Start_time, e.End_time -->
+<table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px;">
+    <tr>
+        <th>Event ID</th>
+        <th>Event Date</th>
+        <th>Event Name</th>
+        <th>Capacity</th>
+        <th>Event Location</th>
+        <th>Event Description</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Leave</th>
+    </tr>
+    {% for e in events %}
+    <tr>
+        <td>{{ e.event_id }}</td>
+        <td>{{ e.event_date }}</td>
+        <td>{{ e.event_name }}</td>
+        <td>{{ e.capacity }}</td>
+        <td>{{ e.event_location }}</td>
+        <td>{{ e.event_description }}</td>
+        <td>{{ e.start_time }}</td>
+        <td>{{ e.end_time }}</td>
+        <td>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" formaction="{{ e.event_id }}/quit/">Quit</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %} {% endblock %}

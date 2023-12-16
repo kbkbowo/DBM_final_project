@@ -304,7 +304,7 @@ def apply_visit_org(user_id, org_id, visit_date):
     conn.commit()
     return True
 
-def get_user_schedules(user_id):
+def get_user_visits(user_id):
     _, cur = get_db()
     sql = f"""
     SELECT o.Org_name, v.Visit_date, v.STATUS
@@ -473,5 +473,44 @@ def get_user_reported_animals(user_id):
     result = cur.fetchall()
     return result
 
+@full_transaction
+def quit_event(user_id, event_id):
+    _, cur = get_db()
+    sql = f"""
+    DELETE FROM ATTEND
+    WHERE User_ID = '{user_id}' AND Event_ID = '{event_id}';
+    """
+    cur.execute(sql)
+    return True
 
+def get_hospital_info(hospital_id):
+    _, cur = get_db()
+    sql = f"""
+    SELECT h.Hospital_ID, h.Hospital_Name, h.Hospital_Address, h.Hospital_phone_number
+    FROM HOSPITAL AS h
+    WHERE h.Hospital_ID = '{hospital_id}';
+    """
+    df = sqlio.read_sql_query(sql, conn)
+    return df.to_records()
+
+@full_transaction
+def delete_hospital(hospital_id):
+    _, cur = get_db()
+    sql = f"""
+    DELETE FROM HOSPITAL
+    WHERE Hospital_ID = '{hospital_id}';
+    """
+    cur.execute(sql)
+    return True
+
+@full_transaction
+def edit_hospital(hospital_id, name, address, phone):
+    _, cur = get_db()
+    sql = f"""
+    UPDATE HOSPITAL
+    SET Hospital_Name = '{name}', Hospital_Address = '{address}', Hospital_phone_number = '{phone}'
+    WHERE Hospital_ID = '{hospital_id}';
+    """
+    cur.execute(sql)
+    return True
 

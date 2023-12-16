@@ -1,0 +1,38 @@
+{% extends 'baseOrghome.html' %} {% block title %} Delete Hospital {%endblock %} {% block navPageName %}
+<a class="navbar-brand" href="#">Delete Hospital</a> {% endblock %} {%block content %}
+
+<head>
+    <title>Delete Hospital</title>
+</head>
+
+<body>
+    <h1>Delete Hospital</h1>
+
+    <h2>Hospital Information</h2>
+    <table style="margin: auto; text-align: right;">
+        <tr>
+            <th>Hospital ID</th>
+            <th>Hospital Name</th>
+            <th>Hospital Address</th>
+            <th>Hospital Phone</th>
+        </tr>
+        <tr>
+            <td>{{ hospital.hospital_id }}</td>
+            <td>{{ hospital.hospital_name }}</td>
+            <td>{{ hospital.hospital_address }}</td>
+            <td>{{ hospital.hospital_phone_number }}</td>
+        </tr>
+    </table>
+
+    <!-- confirmation message -->
+    <br><br>
+    <p>Are you sure you want to delete this hospital?</p>
+
+    <form method=post>
+        {% csrf_token %}
+        <button type="submit" formaction="../../">No, Go Back</button>
+        <button type="submit" name="Delete">Yes, Delete</button>
+    </form>
+</body>
+
+{% endblock %}

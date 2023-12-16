@@ -154,9 +154,9 @@ class QueryUsersForm(forms.Form):
         FROM SELECTED_USERS AS su
             LEFT JOIN JOIN_ AS j ON su.User_ID = j.User_ID
             LEFT JOIN BUILD AS b ON su.User_ID = b.Founder_ID
-            LEFT JOIN HOLD AS h ON b.Org_ID = h.Org_ID
-            LEFT JOIN EVENT AS e ON h.Event_ID = e.Event_ID AND e.Event_date < CURRENT_DATE
-            LEFT JOIN EVENT AS e2 ON h.Event_ID = e2.Event_ID AND e2.Event_date >= CURRENT_DATE
+            LEFT JOIN ATTEND AS at ON su.User_ID = at.User_ID
+            LEFT JOIN EVENT AS e ON at.Event_ID = e.Event_ID AND e.Event_date < CURRENT_DATE
+            LEFT JOIN EVENT AS e2 ON at.Event_ID = e2.Event_ID AND e2.Event_date >= CURRENT_DATE
             LEFT JOIN ANIMAL AS a ON su.User_ID = a.Report_user_id
             LEFT JOIN ANIMAL AS a2 ON su.User_ID = a2.Adopt_user_id
             LEFT JOIN DONATE AS d ON su.User_ID = d.Donor_ID
@@ -165,7 +165,182 @@ class QueryUsersForm(forms.Form):
         db = sqlio.read_sql_query(sql, conn)
         return db.to_records()
 
+# org_id, org_name, org_address, org_phone, org_founded_date, founder_id, founder_name
+class ManageOrgsForm(forms.Form):
+    org_id = forms.CharField(required=False)
+    org_name = forms.CharField(required=False)
+    org_address = forms.CharField(required=False)
+    org_phone = forms.CharField(required=False)
+    org_founded_date_after = forms.DateField(required=False)
+    org_founded_date_before = forms.DateField(required=False)
+    founder_id = forms.CharField(required=False)
+    founder_name = forms.CharField(required=False)
+    action = forms.ChoiceField(choices=[('Act0', 'Act0'), ('Act1', 'Act1')], required=False)
+
+    def query_search(self):
+        org_id = self.cleaned_data['org_id']
+        org_name = self.cleaned_data['org_name']
+        org_address = self.cleaned_data['org_address']
+        org_phone = self.cleaned_data['org_phone']
+        org_founded_date_after = self.cleaned_data['org_founded_date_after']
+        org_founded_date_before = self.cleaned_data['org_founded_date_before']
+        founder_id = self.cleaned_data['founder_id']
+        founder_name = self.cleaned_data['founder_name']
+        conn, cur = get_db()
+        sql = f"""
+        SELECT DISTINCT o.Org_ID::int, o.Org_name, o.Org_address, o.Org_phone_number, o.Org_founded_date
+        FROM ORGANIZATION AS o
+            JOIN BUILD AS b ON o.Org_ID = b.Org_ID
+            JOIN USER_ AS u ON b.Founder_ID = u.User_ID
+        WHERE o.Org_ID LIKE '%{org_id}%'
+            AND o.Org_name LIKE '%{org_name}%'
+            AND o.Org_address LIKE '%{org_address}%'
+            AND o.Org_phone_number LIKE '%{org_phone}%'
+            AND o.Org_founded_date >= '{org_founded_date_after if org_founded_date_after else '0001-01-01'}'
+            AND o.Org_founded_date <= '{org_founded_date_before if org_founded_date_before else '9999-12-31'}'
+            AND b.Founder_ID LIKE '%{founder_id}%'
+            AND u.User_name LIKE '%{founder_name}%'
+        ORDER BY o.Org_ID::int DESC;
+        """
+        df = sqlio.read_sql_query(sql, conn).to_records()
+        self.org_data = df
+        return df
+
+    def query_search_detailed(self):
+        org_id = self.cleaned_data['org_id']
+        org_name = self.cleaned_data['org_name']
+        org_address = self.cleaned_data['org_address']
+        org_phone = self.cleaned_data['org_phone']
+        org_founded_date_after = self.cleaned_data['org_founded_date_after']
+        org_founded_date_before = self.cleaned_data['org_founded_date_before']
+        founder_id = self.cleaned_data['founder_id']
+        founder_name = self.cleaned_data['founder_name']
+        conn, cur = get_db()
+        ### This is too slow (Exploding the join operations) ###
+        # calculate stats. num_founders, num_members, num_past_events, num_upcoming_events, num_sheltered_animals, num_released_animals, num_adopted_animals, num_donations
+        # sql = f"""
+        # WITH SELECTED_ORGS AS (
+        #     SELECT DISTINCT o.Org_ID, o.Org_name, o.Org_address, o.Org_phone_number, o.Org_founded_date
+        #     FROM ORGANIZATION AS o
+        #         JOIN BUILD AS b ON o.Org_ID = b.Org_ID
+        #         JOIN USER_ AS u ON b.Founder_ID = u.User_ID
+        #     WHERE o.Org_ID LIKE '%{org_id}%'
+        #         AND o.Org_name LIKE '%{org_name}%'
+        #         AND o.Org_address LIKE '%{org_address}%'
+        #         AND o.Org_phone_number LIKE '%{org_phone}%'
+        #         AND o.Org_founded_date >= '{org_founded_date_after if org_founded_date_after else '0001-01-01'}'
+        #         AND o.Org_founded_date <= '{org_founded_date_before if org_founded_date_before else '9999-12-31'}'
+        #         AND b.Founder_ID LIKE '%{founder_id}%'
+        #         AND u.User_name LIKE '%{founder_name}%'
+        #     ORDER BY o.Org_ID DESC
+        # )
         
+
+        # SELECT so.Org_ID, so.Org_name, so.Org_address, so.Org_phone_number, so.Org_founded_date,
+        #     COUNT(DISTINCT b.Founder_ID) AS num_founders,
+        #     COUNT(DISTINCT j.User_ID) AS num_members,
+        #     COUNT(DISTINCT e.Event_ID) AS num_past_events,
+        #     COUNT(DISTINCT e2.Event_ID) AS num_upcoming_events,
+        #     COUNT(DISTINCT a.Animal_ID) AS num_sheltered_animals,
+        #     COUNT(DISTINCT a2.Animal_ID) AS num_released_animals,
+        #     COUNT(DISTINCT a3.Animal_ID) AS num_adopted_animals,
+        #     COUNT(DISTINCT d.Donor_ID) AS num_donations
+        # FROM SELECTED_ORGS AS so
+        #     LEFT JOIN BUILD AS b ON so.Org_ID = b.Org_ID
+        #     LEFT JOIN JOIN_ AS j ON so.Org_ID = j.Org_ID
+        #     LEFT JOIN HOLD AS h ON so.Org_ID = h.Org_ID
+        #     LEFT JOIN EVENT AS e ON h.Event_ID = e.Event_ID AND e.Event_date < CURRENT_DATE
+        #     LEFT JOIN EVENT AS e2 ON h.Event_ID = e2.Event_ID AND e2.Event_date >= CURRENT_DATE
+        #     LEFT JOIN ANIMAL AS a ON so.Org_ID = a.Org_id AND a.Animal_status = 'Sheltered'
+        #     LEFT JOIN ANIMAL AS a2 ON so.Org_ID = a2.Org_id AND a2.Animal_status = 'Released'
+        #     LEFT JOIN ANIMAL AS a3 ON so.Org_ID = a3.Org_id AND a3.Animal_status = 'Adopted'
+        #     LEFT JOIN DONATE AS d ON so.Org_ID = d.Org_ID
+        # GROUP BY so.Org_ID, so.Org_name, so.Org_address, so.Org_phone_number, so.Org_founded_date
+        # ORDER BY so.Org_ID::int DESC;
+        # """
+        sql = f"""
+        WITH SELECTED_ORGS AS (
+            SELECT DISTINCT o.Org_ID, o.Org_name, o.Org_address, o.Org_phone_number, o.Org_founded_date
+            FROM ORGANIZATION AS o
+            WHERE o.Org_ID LIKE '%{org_id}%'
+                AND o.Org_name LIKE '%{org_name}%'
+                AND o.Org_address LIKE '%{org_address}%'
+                AND o.Org_phone_number LIKE '%{org_phone}%'
+                AND o.Org_founded_date >= '{org_founded_date_after if org_founded_date_after else '0001-01-01'}'
+                AND o.Org_founded_date <= '{org_founded_date_before if org_founded_date_before else '9999-12-31'}'
+            ORDER BY o.Org_ID DESC
+        ), FOUNDERS_COUNT AS (
+            SELECT b.Org_ID, COUNT(DISTINCT b.Founder_ID) AS num_founders
+            FROM BUILD AS b
+            JOIN SELECTED_ORGS AS so ON b.Org_ID = so.Org_ID
+            GROUP BY b.Org_ID
+        ), MEMBERS_COUNT AS (
+            SELECT j.Org_ID, COUNT(DISTINCT j.User_ID) AS num_members
+            FROM JOIN_ AS j
+            JOIN SELECTED_ORGS AS so ON j.Org_ID = so.Org_ID
+            GROUP BY j.Org_ID
+        ), PAST_EVENTS_COUNT AS (
+            SELECT h.Org_ID, COUNT(DISTINCT e.Event_ID) AS num_past_events
+            FROM HOLD AS h
+            JOIN EVENT AS e ON h.Event_ID = e.Event_ID AND e.Event_date < CURRENT_DATE
+            JOIN SELECTED_ORGS AS so ON h.Org_ID = so.Org_ID
+            GROUP BY h.Org_ID
+        ), UPCOMING_EVENTS_COUNT AS (
+            SELECT h.Org_ID, COUNT(DISTINCT e.Event_ID) AS num_upcoming_events
+            FROM HOLD AS h
+            JOIN EVENT AS e ON h.Event_ID = e.Event_ID AND e.Event_date >= CURRENT_DATE
+            JOIN SELECTED_ORGS AS so ON h.Org_ID = so.Org_ID
+            GROUP BY h.Org_ID
+        ), SHELTERED_ANIMALS_COUNT AS (
+            SELECT a.Org_ID, COUNT(DISTINCT a.Animal_ID) AS num_sheltered_animals
+            FROM ANIMAL AS a
+            JOIN SELECTED_ORGS AS so ON a.Org_ID = so.Org_ID
+            WHERE a.Animal_status = 'Sheltered'
+            GROUP BY a.Org_ID
+        ), RELEASED_ANIMALS_COUNT AS (
+            SELECT a.Org_ID, COUNT(DISTINCT a.Animal_ID) AS num_released_animals
+            FROM ANIMAL AS a
+            JOIN SELECTED_ORGS AS so ON a.Org_ID = so.Org_ID
+            WHERE a.Animal_status = 'Released'
+            GROUP BY a.Org_ID
+        ), ADOPTED_ANIMALS_COUNT AS (
+            SELECT a.Org_ID, COUNT(DISTINCT a.Animal_ID) AS num_adopted_animals
+            FROM ANIMAL AS a
+            JOIN SELECTED_ORGS AS so ON a.Org_ID = so.Org_ID
+            WHERE a.Animal_status = 'Adopted'
+            GROUP BY a.Org_ID
+        ), DONATIONS_COUNT AS (
+            SELECT d.Org_ID, COUNT(DISTINCT d.Donate_ID) AS num_donations
+            FROM DONATE AS d
+            JOIN SELECTED_ORGS AS so ON d.Org_ID = so.Org_ID
+            GROUP BY d.Org_ID
+        )
+
+        SELECT 
+            so.Org_ID, so.Org_name, so.Org_address, so.Org_phone_number, so.Org_founded_date,
+            COALESCE(fc.num_founders, 0) as num_founders,
+            COALESCE(mc.num_members, 0) as num_members,
+            COALESCE(pec.num_past_events, 0) as num_past_events,
+            COALESCE(uec.num_upcoming_events, 0) as num_upcoming_events,
+            COALESCE(sac.num_sheltered_animals, 0) as num_sheltered_animals,
+            COALESCE(rac.num_released_animals, 0) as num_released_animals,
+            COALESCE(aac.num_adopted_animals, 0) as num_adopted_animals,
+            COALESCE(dc.num_donations, 0) as num_donations
+        FROM SELECTED_ORGS AS so
+            LEFT JOIN FOUNDERS_COUNT AS fc ON so.Org_ID = fc.Org_ID
+            LEFT JOIN MEMBERS_COUNT AS mc ON so.Org_ID = mc.Org_ID
+            LEFT JOIN PAST_EVENTS_COUNT AS pec ON so.Org_ID = pec.Org_ID
+            LEFT JOIN UPCOMING_EVENTS_COUNT AS uec ON so.Org_ID = uec.Org_ID
+            LEFT JOIN SHELTERED_ANIMALS_COUNT AS sac ON so.Org_ID = sac.Org_ID
+            LEFT JOIN RELEASED_ANIMALS_COUNT AS rac ON so.Org_ID = rac.Org_ID
+            LEFT JOIN ADOPTED_ANIMALS_COUNT AS aac ON so.Org_ID = aac.Org_ID
+            LEFT JOIN DONATIONS_COUNT AS dc ON so.Org_ID = dc.Org_ID
+        ORDER BY so.Org_ID::int DESC;
+        """
+        df = sqlio.read_sql_query(sql, conn).to_records()
+        self.org_data = df
+        return df
+       
 class ManageUserForm(forms.Form):
     action_choices = forms.ChoiceField(choices=[('promote', 'Promote (Make Admin)'), ('demote', 'Demote (Make User)'), ('delete', 'Delete Account')], required=False)
 
@@ -563,3 +738,97 @@ class AddDonationForm(forms.Form):
         cur.execute(sql)
         return True
         
+class QueryHospitalForm(forms.Form):
+    hospital_id = forms.CharField(required=False)
+    hospital_name = forms.CharField(required=False)
+    hospital_address = forms.CharField(required=False)
+    hospital_phone = forms.CharField(required=False)
+
+    def query_search(self):
+        conn, cur = get_db()
+        hospital_name = self.cleaned_data['hospital_name']
+        hospital_address = self.cleaned_data['hospital_address']
+        hospital_phone = self.cleaned_data['hospital_phone']
+        hospital_id = self.cleaned_data['hospital_id']
+
+        sql = f"""
+        SELECT *
+        FROM HOSPITAL AS h
+        WHERE h.Hospital_Name LIKE '%{hospital_name}%' 
+            AND h.Hospital_Address LIKE '%{hospital_address}%' 
+            AND h.Hospital_phone_number LIKE '%{hospital_phone}%'
+            AND h.Hospital_ID LIKE '%{hospital_id}%'
+        ORDER BY h.Hospital_ID::int DESC;
+        """
+        df = sqlio.read_sql_query(sql, conn)
+        return df.to_records()
+
+    def query_search_detailed(self):
+        conn, cur = get_db()
+        hospital_name = self.cleaned_data['hospital_name']
+        hospital_address = self.cleaned_data['hospital_address']
+        hospital_phone = self.cleaned_data['hospital_phone']
+        hospital_id = self.cleaned_data['hospital_id']
+
+        # calculate stats. num_animal_sent, num_animal_present with SENT_TO table
+        sql = f"""
+        WITH SELECTED_HOSPITALS AS (
+            SELECT h.Hospital_ID, h.Hospital_Name, h.Hospital_Address, h.Hospital_phone_number
+            FROM HOSPITAL AS h
+            WHERE h.Hospital_Name LIKE '%{hospital_name}%' 
+                AND h.Hospital_Address LIKE '%{hospital_address}%' 
+                AND h.Hospital_phone_number LIKE '%{hospital_phone}%'
+                AND h.Hospital_ID LIKE '%{hospital_id}%'
+        ), ANIMAL_SENT_COUNT AS (
+            SELECT s.Hospital_ID, COUNT(DISTINCT s.Animal_ID) AS num_animal_sent
+            FROM SENT_TO AS s
+            JOIN SELECTED_HOSPITALS AS sh ON s.Hospital_ID = sh.Hospital_ID
+            GROUP BY s.Hospital_ID
+        ), ANIMAL_PRESENT_COUNT AS (
+            SELECT s.Hospital_ID, COUNT(DISTINCT s.Animal_ID) AS num_animal_present
+            FROM SENT_TO AS s
+            JOIN SELECTED_HOSPITALS AS sh ON s.Hospital_ID = sh.Hospital_ID
+            WHERE s.Return_date IS NULL
+            GROUP BY s.Hospital_ID
+        )
+
+        SELECT sh.Hospital_ID, sh.Hospital_Name, sh.Hospital_Address, sh.Hospital_phone_number,
+            COALESCE(sc.num_animal_sent, 0) AS num_animal_sent,
+            COALESCE(pc.num_animal_present, 0) AS num_animal_present
+        FROM SELECTED_HOSPITALS AS sh
+            LEFT JOIN ANIMAL_SENT_COUNT AS sc ON sh.Hospital_ID = sc.Hospital_ID
+            LEFT JOIN ANIMAL_PRESENT_COUNT AS pc ON sh.Hospital_ID = pc.Hospital_ID
+        ORDER BY sh.Hospital_ID::int DESC;
+        """
+        df = sqlio.read_sql_query(sql, conn)
+        return df.to_records()
+
+class AddHospitalForm(forms.Form):
+    hospital_name = forms.CharField(required=True)
+    hospital_address = forms.CharField(required=True)
+    hospital_phone = forms.CharField(required=True)
+
+    @full_transaction
+    def execute_action(self):
+        _, cur = get_db()
+        hospital_name = self.cleaned_data['hospital_name']
+        hospital_address = self.cleaned_data['hospital_address']
+        hospital_phone = self.cleaned_data['hospital_phone']
+        # Get the next hospital id
+        sql = """
+        SELECT Hospital_ID
+        FROM HOSPITAL
+        ORDER BY Hospital_ID::int DESC
+        LIMIT 1;
+        """
+        cur.execute(sql)
+        result = cur.fetchall()
+        next_id = int(result[0][0]) + 1
+        # Insert the hospital
+        sql = f"""
+        INSERT INTO HOSPITAL (Hospital_ID, Hospital_Name, Hospital_Address, Hospital_phone_number)
+        VALUES ('{next_id}', '{hospital_name}', '{hospital_address}', '{hospital_phone}');
+        """
+        cur.execute(sql)
+        print(f"successfully created hospital {hospital_name}")
+        return True

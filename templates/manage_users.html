@@ -47,6 +47,11 @@
         </table>
         <button type="submit" name="Search" style="width: 270px;">Search</button>
     </form>
+    <br>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="Toggle Details" style="width: 270px;">Toggle Detailed Statistics</button>
+    </form>
     <br><br>
     <!-- list the search results -->
     {% if users is not None %}
@@ -70,10 +75,6 @@
 
     <h2>Search Results</h2>
     <p>Found {{ len_users }} results</p>
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit" name="Toggle Details" style="width: 270px;">Toggle Detailed Statistics</button>
-    </form>
     {% if show_details %}
     <!-- joined_orgs, founded_orgs, past_events, upcoming_events, reported_animals, adopted_animals, donated_items -->
     <table style="margin: auto; text-align:left;">

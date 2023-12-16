@@ -1,0 +1,21 @@
+ {% extends 'baseOrghome.html' %} {% block title %} Edit Hospital {%endblock %} {% block navPageName %}
+<a class="navbar-brand" href="#">Edit Hospital</a> {% endblock %} {%block content %}
+
+<head>
+    <title>Edit Hospital</title>
+</head>
+
+<body>
+    <h1>Edit Hospital</h1>
+
+    <form method=post>
+        {% csrf_token %}
+        <table style="margin: auto; text-align: right;">
+            {{ form.as_table }}
+        </table>
+        <button type="submit" name="Edit">Edit</button>
+    </form>
+    {{ status }}
+</body>
+
+{% endblock %}

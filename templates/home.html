@@ -71,7 +71,11 @@
             </form>
             <form method="post">
                 {% csrf_token %}
-                <button type="submit" formaction="manage_orgs">Manage Organizations</button>
+                <button type="submit" formaction="manage_orgs/">Manage Organizations</button>
+            </form>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" formaction="manage_hospitals/">Manage Hospitals</button>
             </form>
             {% endif %}
         </div>
