@@ -1,52 +1,62 @@
-<html>
-
+{% extends 'baseOrghome.html' %} {% block title %} Create Event {%endblock %} {% block navPageName %}
+<a class="navbar-brand" href="#">Create Event</a> {% endblock %} {% block content %}
+{% load widget_tweaks %}
 <head>
     <title>Create Event</title>
 </head>
 
-<body>
+<div class="form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto;">
     <h1>Create Event</h1>
-    <p>Create an event as organization {{ org_info.org_name }}. If the event is co-organized by multiple organizations, they also have to come to this page and fill in this form. </p>
-    <form method="post">
+    <p>Create an event as organization {{ org_info.org_name }} </p> 
+    <p>If the event is co-organized by multiple organizations, </p>
+    <p>also have to come to this page and fill in this form. </p>
+    <!-- <form method="post">
         {% csrf_token %}
-        <button type="submit" formaction="../../">Go Back</button>
-    </form>
-
+        <button type="submit" formaction="../">Go Back</button>
+    </form> -->
+    <div class="form-container" style="width: fit-content; margin: 0 auto;">
     <form method="post">
         {% csrf_token %}
         <table>
             <tr>
                 <td>Event Name</td>
-                <td>{{ form.event_name }}</td>
+                <td>{{ form.event_name |attr:"placeholder:Required"}}</td>
             </tr>
             <tr>
                 <td>Event Date</td>
-                <td>{{ form.event_date }}</td>
+                <td>{{ form.event_date |attr:"placeholder:YYYY-MM-DD"}}</td>
             </tr>
             <tr>
                 <td>Capacity</td>
-                <td>{{ form.capacity }}</td>
+                <td>{{ form.capacity |attr:"placeholder:Required"}}</td>
             </tr>
             <tr>
                 <td>Event Location</td>
-                <td>{{ form.event_location }}</td>
+                <td>{{ form.event_location |attr:"placeholder:Required"}}</td>
             </tr>
             <tr>
                 <td>Event Description</td>
-                <td> {{ form.event_description }} </td>
+                <td> {{ form.event_description |attr:"placeholder:Required"}} </td>
             </tr>
             <tr>
                 <td>Start Time</td>
-                <td> {{ form.start_time }} </td>
+                <td> {{ form.start_time |attr:"placeholder:xx:xx"}} </td>
             </tr>
             <tr>
                 <td>End Time</td>
-                <td>{{ form.end_time }}</td>
+                <td>{{ form.end_time |attr:"placeholder:xx:xx"}}</td>
             </tr>
         </table>
+        <div class = "container" style="display: flex; justify-content: space-between; margin-top: 5px;">
         <button type="submit" name="create_event">Create Event</button>
-
+    
     </form>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" formaction="../">Go Back</button>
+    </form>
+</div>
     {{ status}} {{ form.errors }}
-
-</html>
+</div>
+</div>
+{%endblock%}

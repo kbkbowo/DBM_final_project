@@ -6,6 +6,7 @@
 </head>
 
 <body>
+    <div class="form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto;">
     <h1>Add Hospital</h1>
 
     <form method=post>
@@ -13,8 +14,9 @@
         <table style="margin: auto; text-align: right;">
             {{ form.as_table }}
         </table>
-        <button type="submit" name="Add">Add</button>
+        <button type="submit" name="Add" style="width: 320px;">Add</button>
     </form>
+</div>
 </body>
 
 {% endblock %}

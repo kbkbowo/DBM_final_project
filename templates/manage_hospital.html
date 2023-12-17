@@ -6,6 +6,7 @@
 </head>
 
 <body>
+    <div class="form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto;">
     <h1>Manage Hospital</h1>
 
     <form method=get>
@@ -33,13 +34,15 @@
                 <td>{{ form.hospital_phone }}</td>
             </tr>
         </table>
-        <br>
+        <div class = "container" style="display: flex; justify-content: space-between; margin-top: 5px;">
         <button type="submit" name="Submit">Submit</button>
     </form>
     <form method="post">
         {% csrf_token %}
         <button type="submit" name="Toggle Details">Toggle Detailed Statistics</button>
+    </div>
     </form>
+</div>
     <br><br>
 
     <h2>Actions</h2>
@@ -56,7 +59,7 @@
     <br><br>
 
     <h2>Search Results</h2>
-    <table style="margin: auto; text-align: right;">
+    <table style="margin: auto; text-align: right;" class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px;">
         <tr>
             <th>Hospital ID</th>
             <th>Hospital Name</th>

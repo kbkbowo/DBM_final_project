@@ -1,18 +1,27 @@
+{% extends 'baseOrghome.html' %} {% block title %} Release Animal{%endblock %} 
+
+{% block navPageName %}
+    <a class="navbar-brand" href="#">Release Animal</a> 
+{% endblock %} 
+
+{% block content %}
+
+
 <head>
     <title>Release Animal</title>
 </head>
 
-<body>
-    <h1>Release Animal</h1>
 
-    <form method="GET">
+    <!-- <h1>Release Animal</h1> -->
+
+    <!-- <form method="GET">
         <button>
             <a href="../../">Back</a>
         </button>
-    </form>
+    </form> -->
 
     <h2>Animal Information</h2>
-    <table>
+    <table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px;">
         <tr>
             <th>Animal ID</th>
             <th>Animal Type</th>
@@ -34,12 +43,18 @@
             <td>{{ animal.shelter_date }}</td>
         </tr>
     </table>
-
+    <br>
+    <div class="form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto;">
     <h2>Confirmation</h2>
     <p>Are you sure you want to release this animal?</p>
+    <div class = "container" style="display: flex; justify-content: space-around; margin-top: 5px;">
     <form method="POST">
         {% csrf_token %}
         <button type="submit" name="Release">Yes, Release</button>
+        <button formaction="../../">Back</button>
     </form>
+</div>
     {{ status }}
-</body>
+</div>
+
+{%endblock%}

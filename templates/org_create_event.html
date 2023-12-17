@@ -1,9 +1,10 @@
-<html>
+{% extends 'baseOrghome.html' %} {% block title %} Create Event {%endblock %} {% block navPageName %}
+<a class="navbar-brand" href="#">Create Event</a> {% endblock %} {% block content %}
+
 <head>
     <title>Create Event</title>
 </head>
 
-<body>
     <h1>Create Event</h1>
     <p>Create an event as organization {{ org_info.org_name }}</p>
     <form method="post">
@@ -48,4 +49,5 @@
     </form>
     {{ status}}
     {{ form.errors }}
-</html>
+
+{%endblock%}
