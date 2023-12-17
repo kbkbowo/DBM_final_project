@@ -1,0 +1,60 @@
+{% extends 'baseOrghome.html' %} {% block title %} Release Animal{%endblock %} 
+
+{% block navPageName %}
+    <a class="navbar-brand" href="#">Release Animal</a> 
+{% endblock %} 
+
+{% block content %}
+
+
+<head>
+    <title>Release Animal</title>
+</head>
+
+
+    <!-- <h1>Release Animal</h1> -->
+
+    <!-- <form method="GET">
+        <button>
+            <a href="../../">Back</a>
+        </button>
+    </form> -->
+
+    <h2>Animal Information</h2>
+    <table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px;">
+        <tr>
+            <th>Animal ID</th>
+            <th>Animal Type</th>
+            <th>Animal Name</th>
+            <th>Animal Status</th>
+            <th>Reported Date</th>
+            <th>Reported Reason</th>
+            <th>Reported Location</th>
+            <th>Shelter Date</th>
+        </tr>
+        <tr>
+            <td>{{ animal.animal_id }}</td>
+            <td>{{ animal.animal_type }}</td>
+            <td>{{ animal.animal_name }}</td>
+            <td>{{ animal.animal_status }}</td>
+            <td>{{ animal.reported_date }}</td>
+            <td>{{ animal.reported_reason }}</td>
+            <td>{{ animal.reported_location }}</td>
+            <td>{{ animal.shelter_date }}</td>
+        </tr>
+    </table>
+    <br>
+    <div class="form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto;">
+    <h2>Confirmation</h2>
+    <p>Are you sure you want to release this animal?</p>
+    <div class = "container" style="display: flex; justify-content: space-around; margin-top: 5px;">
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" name="Release">Yes, Release</button>
+        <button formaction="../../">Back</button>
+    </form>
+</div>
+    {{ status }}
+</div>
+
+{%endblock%}

@@ -1,0 +1,138 @@
+ {% extends 'baseOrghome.html' %} {% block title %} Manage Orgs {%endblock %} {% block navPageName %}
+<a class="navbar-brand" href="#">Manage Orgs</a> {% endblock %} {%block content %}
+
+<style>
+    th,
+    td {
+        text-align: right;
+        vertical-align: top;
+        flex: auto;
+        padding-inline: 8px;
+    }
+</style>
+
+<head>
+    <title>Manage Organizations</title>
+</head>
+
+<body>
+    <div class="form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto; ">
+        <h1>Manage Organizations</h1>
+        <form method="post">
+            {% csrf_token %}
+            <table style="margin: auto; text-align: right;">
+                <!-- org_id = forms.CharField(required=False)
+    org_name = forms.CharField(required=False)
+    org_address = forms.CharField(required=False)
+    org_phone = forms.CharField(required=False)
+    org_founded_date_after = forms.DateField(required=False)
+    org_founded_date_before = forms.DateField(required=False)
+    founder_id = forms.CharField(required=False)
+    founder_name = forms.CharField(required=False) -->
+                <tr>
+                    <td><label for="org_id">Org ID:</label></td>
+                    <td>{{ form.org_id }}</td>
+                </tr>
+                <tr>
+                    <td><label for="org_name">Org Name:</label></td>
+                    <td>{{ form.org_name }}</td>
+                </tr>
+                <tr>
+                    <td><label for="org_address">Org Address:</label></td>
+                    <td>{{ form.org_address }}</td>
+                </tr>
+                <tr>
+                    <td><label for="org_phone">Org Phone:</label></td>
+                    <td>{{ form.org_phone }}</td>
+                </tr>
+                <tr>
+                    <td><label for="org_founded_date_after">Founded Date After:</label></td>
+                    <td>{{ form.org_founded_date_after }}</td>
+                </tr>
+                <tr>
+                    <td><label for="org_founded_date_before">Founded Date Before:</label></td>
+                    <td>{{ form.org_founded_date_before }}</td>
+                </tr>
+                <tr>
+                    <td><label for="founder_id">Founder ID:</label></td>
+                    <td>{{ form.founder_id }}</td>
+                </tr>
+                <tr>
+                    <td><label for="founder_name">Founder Name:</label></td>
+                    <td>{{ form.founder_name }}</td>
+                </tr>
+            </table>
+            <button type="submit" name="Search" style="width: 270px;">Search</button>
+        </form>
+        <br>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" name="Toggle Details" style="width: 270px;">Toggle Detailed Statistics</button>
+        </form>
+        <br><br>
+        <h2>Actions</h2>
+        {% if selected_org %}
+        <!-- If there's unique orgs, display management functions on the org -->
+        <p>You have selected Org_ID = {{ selected_org.org_id }}, {{ selected_org.org_name }}, You can now perform the actions below.</p>
+        <form method="post">
+            {% csrf_token %}
+            <form method="get">
+                <button type="submit" formaction="../org_home/{{selected_org.org_id}}/" style="width: 130px;">View Org</button>
+                <button type="submit" formaction="../org_home/{{selected_org.org_id}}/edit_info/" style="width: 130px;">Edit Org</button>
+                <button type="submit" formaction="../org_home/{{selected_org.org_id}}/edit_founder/" style="width: 130px;">Edit Founder</button>
+                <button type="submit" formaction="../org_home/{{selected_org.org_id}}/delete/" style="width: 130px;">Delete Org</button>
+            </form>
+        </form>
+        {% else %}
+        <p>Please use the search conditions above to identify one and only one organization before performing actions.</p>
+        {% endif %}
+        <!-- list the search results -->
+        <br><br>
+        <h2>Search Results</h2>
+        <p>Found {{ orgs|length }} results</p>
+        {% if orgs is not None %}
+        <!-- o.Org_ID, o.Org_name, o.Org_address, o.Org_phone_number, o.Org_founded_date, b.Founder_ID, u.User_name -->
+        <!-- num_founders, num_members, num_past_events, num_upcoming_events, num_sheltered_animals, num_released_animals, num_adopted_animals, num_donations -->
+        <table class="table table-dark table-striped" style="margin-left:auto; margin-right:auto; margin-top: 5px; margin-bottom: 10px;">
+            <tr>
+                <th>Org ID</th>
+                <th>Org Name</th>
+                <th>Org Phone</th>
+                <th>Org Address</th>
+                <th>Founded Date</th>
+                {% if details %}
+                <th>Num of Founders</th>
+                <th>Num of Members</th>
+                <th>Num of Past Events</th>
+                <th>Num of Upcoming Events</th>
+                <th>Num of Sheltered Animals</th>
+                <th>Num of Released Animals</th>
+                <th>Num of Adopted Animals</th>
+                <th>Num of Donations</th>
+                {% endif %}
+            </tr>
+            {% for org in orgs %}
+            <tr>
+                <td>{{ org.org_id }}</td>
+                <td>{{ org.org_name }}</td>
+                <td>{{ org.org_phone_number }}</td>
+                <td>{{ org.org_address }}</td>
+                <td>{{ org.org_founded_date }}</td>
+                {% if details %}
+                <td>{{ org.num_founders }}</td>
+                <td>{{ org.num_members }}</td>
+                <td>{{ org.num_past_events }}</td>
+                <td>{{ org.num_upcoming_events }}</td>
+                <td>{{ org.num_sheltered_animals }}</td>
+                <td>{{ org.num_released_animals }}</td>
+                <td>{{ org.num_adopted_animals }}</td>
+                <td>{{ org.num_donations }}</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+    </div>
+</body>
+
+{% endblock %}
