@@ -399,7 +399,7 @@ def user_adopt_animal(animal_id, user_id):
     """
     cur.execute(sql)
     result = cur.fetchall()
-    print(result)
+
     if(result == 'Adopted'):
         return False
     
