@@ -16,7 +16,7 @@
 <div class = "form-container" style="background-color: bisque; padding: 20px; border-radius: 10px; width: fit-content; margin: 0 auto; ">
     <h1>Leave Organization</h1>
     {% if last_founder %}
-    <p>Action failed because you are the last founder of {{org_info.org_name |attr:"style=color: red;"  }}.</p>
+    <p>Action failed because you are the last founder of {{org_info.org_name }}.</p>
     <form method="post">
         {% csrf_token %}
         <button type="submit" formaction="../../">Go Back</button>
