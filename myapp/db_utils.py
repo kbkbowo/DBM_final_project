@@ -394,14 +394,13 @@ def user_adopt_animal(animal_id, user_id):
     Select a.Animal_status
     FROM ANIMAL AS a
     WHERE Animal_ID = '{animal_id}'
-        And a.Adopt_user_ID IS NULL
     FOR UPDATE;
     """
     cur.execute(sql)
-    result = cur.fetchall()
+    result = cur.fetchone()[0]
 
     if(result == 'Adopted'):
-        return False
+        raise Exception("Animal has been adopted")
     
     sql = f"""
     UPDATE ANIMAL
