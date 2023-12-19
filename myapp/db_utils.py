@@ -391,7 +391,7 @@ def user_adopt_animal(animal_id, user_id):
     _, cur = get_db()
 
     sql = f"""
-    Select Animal_status,
+    Select Animal_status for UDPATE,
     WHERE Animal_ID = '{animal_id}'
         And a.Adopt_user_ID IS NULL;
     """
