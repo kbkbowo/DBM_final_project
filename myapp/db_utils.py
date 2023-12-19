@@ -233,6 +233,7 @@ def get_org_animals(org_id):
             FROM SENT_TO AS s
             WHERE s.Return_date IS NULL
         )
+        And a.Adopt_user_ID IS NULL
     GROUP BY a.Animal_ID
     ORDER BY a.Shelter_date DESC;
     """
