@@ -389,6 +389,16 @@ def release_animal(animal_id):
 @full_transaction
 def user_adopt_animal(animal_id, user_id):
     _, cur = get_db()
+
+    sql = f"""
+    Select Animal_status,
+    WHERE Animal_ID = '{animal_id}';
+    """
+    cur.execute(sql)
+    result = cur.fetchall()
+    if(result == 'Adopted'):
+        return False
+    
     sql = f"""
     UPDATE ANIMAL
     SET Animal_status = 'Adopted', Adopt_user_ID = '{user_id}'
