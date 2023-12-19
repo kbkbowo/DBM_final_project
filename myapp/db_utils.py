@@ -233,7 +233,6 @@ def get_org_animals(org_id):
             FROM SENT_TO AS s
             WHERE s.Return_date IS NULL
         )
-        And a.Adopt_user_ID IS NULL
     GROUP BY a.Animal_ID
     ORDER BY a.Shelter_date DESC;
     """
@@ -393,7 +392,8 @@ def user_adopt_animal(animal_id, user_id):
 
     sql = f"""
     Select Animal_status,
-    WHERE Animal_ID = '{animal_id}';
+    WHERE Animal_ID = '{animal_id}'
+        And a.Adopt_user_ID IS NULL;
     """
     cur.execute(sql)
     result = cur.fetchall()
