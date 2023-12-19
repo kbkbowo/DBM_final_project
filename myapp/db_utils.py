@@ -391,12 +391,15 @@ def user_adopt_animal(animal_id, user_id):
     _, cur = get_db()
 
     sql = f"""
-    Select Animal_status for UDPATE,
+    Select a.Animal_status
+    FROM ANIMAL AS a
     WHERE Animal_ID = '{animal_id}'
-        And a.Adopt_user_ID IS NULL;
+        And a.Adopt_user_ID IS NULL
+    FOR UPDATE;
     """
     cur.execute(sql)
     result = cur.fetchall()
+    print(result)
     if(result == 'Adopted'):
         return False
     
